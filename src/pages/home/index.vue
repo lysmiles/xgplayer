@@ -6,7 +6,12 @@
     <div class="right-play">
 
       <div class="play-content">
-        <xg-player></xg-player>
+        <xg-player
+          video-url="http://s2.pstatp.com/cdn/expire-1-M/byted-player-videos/1.0.0/xgplayer-demo.mp4",
+          video-id="videoId"
+        >
+
+        </xg-player>
       </div>
     </div>
   </div>
