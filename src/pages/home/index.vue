@@ -12,6 +12,7 @@
       <div class="play-content">
         <xg-player
           :video-url="videoUrl"
+          :camera-id="cameraId"
 
         >
 
@@ -31,8 +32,8 @@
     },
     data() {
       return {
-        videoUrl: 'http://s2.pstatp.com/cdn/expire-1-M/byted-player-videos/1.0.0/xgplayer-demo.mp4',
-        videoId: 'video1',
+        videoUrl: '',
+        cameraId: '',
         cameraList: [
           {
             cameraId: '1001',
@@ -42,7 +43,7 @@
           {
             cameraId: '1002',
             cameraName: '一楼办公室左侧',
-            cameraUrl: 'http://s2.pstatp.com/cdn/expire-1-M/byted-player-videos/1.0.0/xgplayer-demo.mp4',
+            cameraUrl: 'http://vfx.mtime.cn/Video/2019/02/04/mp4/190204084208765161.mp4',
           },
           {
             cameraId: '1003',
@@ -99,6 +100,8 @@
     methods:{
       chooseCamera(list,index){
         this.activeCamera = index
+        this.videoUrl = list.cameraUrl
+        this.cameraId = list.cameraId
       }
     }
   }
