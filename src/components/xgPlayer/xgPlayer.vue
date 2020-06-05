@@ -150,6 +150,7 @@
       } else if (this.splitScreen == 16) {
         this.videoStyles = 'width:24%;height:24%;'
       }
+
       // for (let n = 1; n <= this.splitScreen; n++) {
       //   let obj = {
       //     cameraId: '',

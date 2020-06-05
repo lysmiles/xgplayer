@@ -92,7 +92,6 @@
             cameraUrl: 'http://s2.pstatp.com/cdn/expire-1-M/byted-player-videos/1.0.0/xgplayer-demo.mp4',
           }
 
-
         ],
         activeCamera:''
       }
