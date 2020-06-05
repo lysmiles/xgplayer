@@ -107,19 +107,15 @@
           this.cameraList.push(obj)
         } else {
           if (this.cameraList.length >= this.splitScreen) {
-            alert('dddd')
             let index = this.cameraList.length - (this.splitScreen - 1)
-
-            console.log(this.splitScreen - 1)
-            console.log(this.cameraList.length)
             this.cameraList.splice((this.splitScreen - 1), index)
-            console.log(this.cameraList,'ss')
-            // let obj = {
-            //   cameraId: val,
-            //   videoUrl: this.videoUrl
-            // }
-            // this.cameraList.push(obj)
-          }else if (this.cameraList.length < this.splitScreen) {
+            this.player.destroy()
+            let obj = {
+              cameraId: val,
+              videoUrl: this.videoUrl
+            }
+            this.cameraList.push(obj)
+          } else if (this.cameraList.length < this.splitScreen) {
             let obj = {}
             this.cameraList.map((item, i) => {
               if (val !== item.cameraId) {
@@ -133,8 +129,8 @@
 
         }
         let lastCamera = this.cameraList.slice(-1)
-        if(lastCamera[0].videoUrl && lastCamera[0].videoUrl !== ''){
-          this.initXGPlayer(lastCamera[0],this.cameraList.length)
+        if (lastCamera[0].videoUrl && lastCamera[0].videoUrl !== '') {
+          this.initXGPlayer(lastCamera[0], this.cameraList.length)
         }
         this.setScreenStyle()
 
@@ -170,7 +166,7 @@
       /**
        * 初始化视频
        * */
-      initXGPlayer(cameraMsg,length) {
+      initXGPlayer(cameraMsg, length) {
         this.player = new Player({
           id: length + 'videoID',
           url: cameraMsg.videoUrl,
