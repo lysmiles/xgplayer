@@ -93,7 +93,6 @@
         this.clientWidth = document.getElementById('1videoID').clientWidth
         this.clientHeight = document.getElementById('1videoID').clientHeight
       }
-      this.initXGPlayer()
     },
     methods: {
       /***
@@ -108,14 +107,19 @@
           this.cameraList.push(obj)
         } else {
           if (this.cameraList.length >= this.splitScreen) {
+            alert('dddd')
             let index = this.cameraList.length - (this.splitScreen - 1)
+
+            console.log(this.splitScreen - 1)
+            console.log(this.cameraList.length)
             this.cameraList.splice((this.splitScreen - 1), index)
-            let obj = {
-              cameraId: val,
-              videoUrl: this.videoUrl
-            }
-            this.cameraList.push(obj)
-          }else {
+            console.log(this.cameraList,'ss')
+            // let obj = {
+            //   cameraId: val,
+            //   videoUrl: this.videoUrl
+            // }
+            // this.cameraList.push(obj)
+          }else if (this.cameraList.length < this.splitScreen) {
             let obj = {}
             this.cameraList.map((item, i) => {
               if (val !== item.cameraId) {
@@ -128,9 +132,12 @@
           }
 
         }
+        let lastCamera = this.cameraList.slice(-1)
+        if(lastCamera[0].videoUrl && lastCamera[0].videoUrl !== ''){
+          this.initXGPlayer(lastCamera[0],this.cameraList.length)
+        }
         this.setScreenStyle()
 
-        this.initXGPlayer()
       },
       /**
        * 切换分屏
@@ -163,29 +170,31 @@
       /**
        * 初始化视频
        * */
-      initXGPlayer() {
-        this.cameraList.map((item, i) => {
-          if (item.videoUrl && item.videoUrl !== '') {
+      initXGPlayer(cameraMsg,length) {
+        this.player = new Player({
+          id: length + 'videoID',
+          url: cameraMsg.videoUrl,
+          width: this.clientWidth,
+          height: this.clientHeight,
+          screenShot: this.screenShot,
+          playsinline: true,
+          autoplay: true,
+          download: this.download,
+          pip: this.pip,
+        });
 
-            // console.log(width, 'width')
-            this.player = new Player({
-              id: (i + 1) + 'videoID',
-              url: item.videoUrl,
-              width: this.clientWidth,
-              height: this.clientHeight,
-              screenShot: this.screenShot,
-              playsinline: true,
-              autoplay: true,
-              download: this.download,
-              pip: this.pip,
-            });
-          }
-
-        })
-
-        console.log(this.player, 'player')
-        // }
-        console.log(this.cameraList, 'videoID')
+        // this.cameraList.map((item, i) => {
+        //   if (item.videoUrl && item.videoUrl !== '') {
+        //
+        //     // console.log(width, 'width')
+        //
+        //   }
+        //
+        // })
+        //
+        // console.log(this.player, 'player')
+        // // }
+        // console.log(this.cameraList, 'videoID')
 
       },
 
