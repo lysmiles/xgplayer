@@ -1,14 +1,18 @@
 <template>
   <div class="play-video">
     <div class="left-tree">
-      摄像头切换
+      <ul>
+        <li v-for="(item,i) of cameraList" :key="i" @click="chooseCamera(item,i)">
+          <span :class="activeCamera == i ? 'active-camera' : ''">{{item.cameraName}}</span>
+        </li>
+      </ul>
     </div>
     <div class="right-play">
 
       <div class="play-content">
         <xg-player
-          video-url="http://s2.pstatp.com/cdn/expire-1-M/byted-player-videos/1.0.0/xgplayer-demo.mp4",
-          video-id="videoId"
+          :video-url="videoUrl"
+
         >
 
         </xg-player>
@@ -18,15 +22,83 @@
 </template>
 
 <script>
-  import xgPlayer from "../../components/xgPlayer";
+  import xgPlayer from "../../components/xgPlayer/xgPlayer";
+
   export default {
     name: "index",
-    components:{
+    components: {
       xgPlayer,
     },
     data() {
       return {
-        videoUrl:'http://s2.pstatp.com/cdn/expire-1-M/byted-player-videos/1.0.0/xgplayer-demo.mp4'
+        videoUrl: 'http://s2.pstatp.com/cdn/expire-1-M/byted-player-videos/1.0.0/xgplayer-demo.mp4',
+        videoId: 'video1',
+        cameraList: [
+          {
+            cameraId: '1001',
+            cameraName: '一楼办公室右侧',
+            cameraUrl: 'http://s2.pstatp.com/cdn/expire-1-M/byted-player-videos/1.0.0/xgplayer-demo.mp4',
+          },
+          {
+            cameraId: '1002',
+            cameraName: '一楼办公室左侧',
+            cameraUrl: 'http://s2.pstatp.com/cdn/expire-1-M/byted-player-videos/1.0.0/xgplayer-demo.mp4',
+          },
+          {
+            cameraId: '1003',
+            cameraName: '二楼办公室左侧',
+            cameraUrl: 'http://s2.pstatp.com/cdn/expire-1-M/byted-player-videos/1.0.0/xgplayer-demo.mp4',
+          },
+          {
+            cameraId: '1004',
+            cameraName: '一楼办公室右侧',
+            cameraUrl: 'http://s2.pstatp.com/cdn/expire-1-M/byted-player-videos/1.0.0/xgplayer-demo.mp4',
+          },
+          {
+            cameraId: '1005',
+            cameraName: '三楼办公室左侧',
+            cameraUrl: 'http://s2.pstatp.com/cdn/expire-1-M/byted-player-videos/1.0.0/xgplayer-demo.mp4',
+          }, {
+            cameraId: '1006',
+            cameraName: '三楼办公室右侧',
+            cameraUrl: 'http://s2.pstatp.com/cdn/expire-1-M/byted-player-videos/1.0.0/xgplayer-demo.mp4',
+          },
+          {
+            cameraId: '1007',
+            cameraName: '四楼办公室左侧',
+            cameraUrl: 'http://s2.pstatp.com/cdn/expire-1-M/byted-player-videos/1.0.0/xgplayer-demo.mp4',
+          },
+          {
+            cameraId: '1008',
+            cameraName: '四楼办公室右侧',
+            cameraUrl: 'http://s2.pstatp.com/cdn/expire-1-M/byted-player-videos/1.0.0/xgplayer-demo.mp4',
+          }, {
+            cameraId: '1009',
+            cameraName: '五楼办公室左侧',
+            cameraUrl: 'http://s2.pstatp.com/cdn/expire-1-M/byted-player-videos/1.0.0/xgplayer-demo.mp4',
+          }, {
+            cameraId: '1010',
+            cameraName: '五楼办公室右侧',
+            cameraUrl: 'http://s2.pstatp.com/cdn/expire-1-M/byted-player-videos/1.0.0/xgplayer-demo.mp4',
+          },
+          {
+            cameraId: '1011',
+            cameraName: '六楼办公室左侧',
+            cameraUrl: 'http://s2.pstatp.com/cdn/expire-1-M/byted-player-videos/1.0.0/xgplayer-demo.mp4',
+          }, {
+            cameraId: '1012',
+            cameraName: '六楼办公室右侧',
+            cameraUrl: 'http://s2.pstatp.com/cdn/expire-1-M/byted-player-videos/1.0.0/xgplayer-demo.mp4',
+          }
+
+
+        ],
+        activeCamera:''
+      }
+    },
+    methods:{
+      chooseCamera(list,index){
+        this.activeCamera = index
       }
     }
   }
@@ -39,20 +111,35 @@
     display: flex;
 
     .left-tree {
-      width: 25%;
+      width: 15%;
       height: 100%;
       background-color: #f1f1f1;
+
+      ul {
+        .active-camera{
+          color: #669ff3;
+        }
+        li {
+          height: 35px;
+          line-height: 35px;
+
+          span {
+            cursor: pointer;
+          }
+        }
+      }
     }
 
     .right-play {
-      width: 75%;
+      width: 85%;
       height: 100%;
 
       .play-content {
         width: 100%;
         height: 580px;
-        background-color: #cecece;
+        /*background-color: #cecece;*/
       }
+
     }
   }
 </style>
