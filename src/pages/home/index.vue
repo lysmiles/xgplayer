@@ -43,7 +43,7 @@
           {
             cameraId: '1002',
             cameraName: '一楼办公室左侧',
-            cameraUrl: 'http://vfx.mtime.cn/Video/2019/02/04/mp4/190204084208765161.mp4',
+            cameraUrl: 'http://s2.pstatp.com/cdn/expire-1-M/byted-player-videos/1.0.0/xgplayer-demo.mp4',
           },
           {
             cameraId: '1003',

@@ -70,8 +70,9 @@
         player: '',
         splitScreen: 4,
         videoStyles: '',
-        cameraList: []
-
+        cameraList: [],
+        clientWidth: '',
+        clientHeight: ''
       }
     },
     created() {
@@ -80,6 +81,7 @@
     watch: {
       'cameraId'(val) {
         if (val) {
+
           this.filterData(val)
         }
       }
@@ -93,30 +95,36 @@
        * 数据筛选
        * */
       filterData(val) {
-        console.log(this.cameraList, 'cameraList')
         if (this.cameraList && this.cameraList.length <= 0) {
           let obj = {
             cameraId: val,
             videoUrl: this.videoUrl
           }
           this.cameraList.push(obj)
-        }else {
-          if(this.cameraList.length > this.splitScreen){
+        } else {
+          if (this.cameraList.length >= this.splitScreen) {
             this.cameraList.splice(this.splitScreen)
-          }else {
-            this.cameraList.map((item,i) => {
+            let obj = {
+              cameraId: val,
+              videoUrl: this.videoUrl
+            }
+            this.cameraList.push(obj)
+          } else {
+            let obj = {}
+            this.cameraList.map((item, i) => {
               if (val !== item.cameraId) {
-                let obj = {
-                  cameraId: val,
-                  videoUrl: this.videoUrl
-                }
-                this.cameraList.push(obj)
-              }else {
-                return false
+                obj.cameraId = val
+                obj.videoUrl = this.videoUrl
               }
+
             })
+            this.cameraList.push(obj)
           }
 
+        }
+        if (this.cameraList && this.cameraList.length > 0) {
+          this.clientWidth = document.getElementById('1videoID').clientWidth
+          this.clientHeight = document.getElementById('1videoID').clientHeight
         }
         // if(this.cameraList && this.cameraList.length > 0){
         //   if(this.cameraList[0].cameraId == ''){
@@ -129,65 +137,69 @@
         //       }
         //     })
         //   }
+        this.setScreenStyle()
 
-      this.initXGPlayer()
-    },
-    /**
-     * 切换分屏
-     * */
-    chooseSplitScreen(num) {
-      this.splitScreen = num
-      this.setScreenStyle()
-      // this.initXGPlayer()
-    },
-    setScreenStyle() {
-      if (this.splitScreen == 1) {
-        this.videoStyles = 'width:100%;height:100%'
-      } else if (this.splitScreen == 4) {
-        this.videoStyles = 'width:49%;height:49%;'
-      } else if (this.splitScreen == 9) {
-        this.videoStyles = 'width:33%;height:33%;'
-      } else if (this.splitScreen == 16) {
-        this.videoStyles = 'width:24%;height:24%;'
-      }
-
-      // for (let n = 1; n <= this.splitScreen; n++) {
-      //   let obj = {
-      //     cameraId: '',
-      //     url: '',
-      //   }
-      //   this.cameraList.push(obj)
-      // }
-    },
-    /**
-     * 初始化视频
-     * */
-    initXGPlayer() {
-      this.cameraList.map((item, i) => {
-        if (item.videoUrl && item.videoUrl !== '') {
-          this.player = new Player({
-            id: (i + 1) + 'videoID',
-            url: item.videoUrl,
-            // width: 500,
-            // height: 300,
-            screenShot: this.screenShot,
-            playsinline: true,
-            download: this.download,
-            pip: this.pip,
-            fitVideoSize: 'auto',
-            videoInit: true
-          });
+        this.initXGPlayer()
+      },
+      /**
+       * 切换分屏
+       * */
+      chooseSplitScreen(num) {
+        this.splitScreen = num
+        this.setScreenStyle()
+        // this.initXGPlayer()
+      },
+      setScreenStyle() {
+        if (this.splitScreen == 1) {
+          this.videoStyles = 'width:100% !important;height:100% !important'
+        } else if (this.splitScreen == 4) {
+          this.videoStyles = 'width:49% !important;height:49% !important;'
+        } else if (this.splitScreen == 9) {
+          this.videoStyles = 'width:33%;height:33%;'
+        } else if (this.splitScreen == 16) {
+          this.videoStyles = 'width:24%;height:24%;'
         }
 
-      })
+        // for (let n = 1; n <= this.splitScreen; n++) {
+        //   let obj = {
+        //     cameraId: '',
+        //     url: '',
+        //   }
+        //   this.cameraList.push(obj)
+        // }
+      },
+      /**
+       * 初始化视频
+       * */
+      initXGPlayer() {
+        this.cameraList.map((item, i) => {
+
+          if (item.videoUrl && item.videoUrl !== '') {
+
+            // console.log(width, 'width')
+            this.player = new Player({
+              id: (i + 1) + 'videoID',
+              url: item.videoUrl,
+              width: this.clientWidth,
+              height: this.clientHeight,
+              screenShot: this.screenShot,
+              playsinline: true,
+              download: this.download,
+              pip: this.pip,
+              fitVideoSize: 'auto',
+              videoInit: true
+            });
+          }
+
+        })
 
 
-      // }
-      // console.log(videoID, 'videoID')
+        // }
+        // console.log(videoID, 'videoID')
 
-    },
+      },
 
-  }
+    }
   }
 </script>
 
@@ -216,7 +228,7 @@
       /*background-color: red;*/
       display: flex;
       flex-wrap: wrap;
-      justify-content: space-between;
+      justify-content: space-around;
 
       .video-fix {
         background-color: #ccc;
