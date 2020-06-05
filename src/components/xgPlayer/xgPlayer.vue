@@ -8,6 +8,7 @@
       <i class="iconfont icon-fenpingfangshi1" title="十六屏" @click="chooseSplitScreen(16)"></i>
     </div>
     <div class="video-content">
+
       <div class="video-fix" :style="videoStyles" v-for="item of splitScreen" :key="item" :id="item + 'videoID'"></div>
     </div>
 
@@ -88,6 +89,10 @@
     },
     mounted() {
       this.setScreenStyle()
+      window.onload = () => {
+        this.clientWidth = document.getElementById('1videoID').clientWidth
+        this.clientHeight = document.getElementById('1videoID').clientHeight
+      }
       this.initXGPlayer()
     },
     methods: {
@@ -103,13 +108,14 @@
           this.cameraList.push(obj)
         } else {
           if (this.cameraList.length >= this.splitScreen) {
-            this.cameraList.splice(this.splitScreen)
+            let index = this.cameraList.length - (this.splitScreen - 1)
+            this.cameraList.splice((this.splitScreen - 1), index)
             let obj = {
               cameraId: val,
               videoUrl: this.videoUrl
             }
             this.cameraList.push(obj)
-          } else {
+          }else {
             let obj = {}
             this.cameraList.map((item, i) => {
               if (val !== item.cameraId) {
@@ -122,21 +128,6 @@
           }
 
         }
-        if (this.cameraList && this.cameraList.length > 0) {
-          this.clientWidth = document.getElementById('1videoID').clientWidth
-          this.clientHeight = document.getElementById('1videoID').clientHeight
-        }
-        // if(this.cameraList && this.cameraList.length > 0){
-        //   if(this.cameraList[0].cameraId == ''){
-        //     this.cameraList[0].cameraId = val
-        //     this.cameraList[0].url = this.videoUrl
-        //   }else {
-        //     this.cameraList.map((item,i) => {
-        //       if(item.cameraId && item.cameraId == ''){
-        //
-        //       }
-        //     })
-        //   }
         this.setScreenStyle()
 
         this.initXGPlayer()
@@ -160,6 +151,7 @@
           this.videoStyles = 'width:24%;height:24%;'
         }
 
+
         // for (let n = 1; n <= this.splitScreen; n++) {
         //   let obj = {
         //     cameraId: '',
@@ -173,7 +165,6 @@
        * */
       initXGPlayer() {
         this.cameraList.map((item, i) => {
-
           if (item.videoUrl && item.videoUrl !== '') {
 
             // console.log(width, 'width')
@@ -184,18 +175,17 @@
               height: this.clientHeight,
               screenShot: this.screenShot,
               playsinline: true,
+              autoplay: true,
               download: this.download,
               pip: this.pip,
-              fitVideoSize: 'auto',
-              videoInit: true
             });
           }
 
         })
 
-
+        console.log(this.player, 'player')
         // }
-        // console.log(videoID, 'videoID')
+        console.log(this.cameraList, 'videoID')
 
       },
 
