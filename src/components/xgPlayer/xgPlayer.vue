@@ -6,6 +6,8 @@
       <i class="iconfont icon-fenpin2" title="四屏" @click="chooseSplitScreen(4)"></i>
       <i class="iconfont icon-fenpingfangshi" title="九屏" @click="chooseSplitScreen(9)"></i>
       <i class="iconfont icon-fenpingfangshi1" title="十六屏" @click="chooseSplitScreen(16)"></i>
+      {{clientHeight}}
+      {{clientWidth}}
     </div>
     <div class="video-content">
 
@@ -89,12 +91,16 @@
     },
     mounted() {
       this.setScreenStyle()
-      window.onload = () => {
-        this.clientWidth = document.getElementById('1videoID').clientWidth
-        this.clientHeight = document.getElementById('1videoID').clientHeight
-      }
+      // this.setSix()
+
     },
     methods: {
+      setSix(){
+        window.onload = () => {
+          this.clientWidth = document.getElementById('1videoID').clientWidth
+          this.clientHeight = document.getElementById('1videoID').clientHeight
+        }
+      },
       /***
        * 数据筛选
        * */
@@ -141,6 +147,12 @@
       chooseSplitScreen(num) {
         this.splitScreen = num
         this.setScreenStyle()
+        this.setSix()
+        if (this.cameraList.length > this.splitScreen) {
+          let index = this.cameraList.length - (this.splitScreen)
+          this.cameraList.splice((this.splitScreen), index)
+          this.player.destroy()
+        }
         // this.initXGPlayer()
       },
       setScreenStyle() {
