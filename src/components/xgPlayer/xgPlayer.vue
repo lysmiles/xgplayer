@@ -65,6 +65,13 @@
         default: ''
       },
       /**
+       * 播放类型
+       * */
+      playType: {
+        type: String,
+        default: ''
+      },
+      /**
        * 弹幕
        * */
       danMu: {
@@ -111,7 +118,9 @@
         videoStyles: '',
         cameraList: [],
         clientWidth: '',
-        clientHeight: ''
+        clientHeight: '',
+        danMuId: 0,
+        sendDanmuData: {}
       }
     },
     created() {
@@ -134,18 +143,29 @@
        * 发送弹幕
        * */
       sendDanmu() {
-        console.log(this.chooseCameraId, 'id')
         if (this.cameraList && this.cameraList.length > 0) {
+          this.danMuId++
           this.cameraList.map(item => {
             if (this.chooseCameraId == item.cameraId) {
-                  this.player.danmu.sendComment({  //发送弹幕
-                    duration: 15000,
-                    id: this.danmu.comments.length + 1,
-                    start: 5000,
-                    txt: this.danMuContent,
-                  })
+              this.player.danmu.sendComment({  //发送弹幕
+                duration: 15000,
+                id: this.danMuId,
+                // start: 5000,
+                txt: this.danMuContent,
+              })
             }
           })
+          if (this.playType !== 'live') {
+            // let startTime = Date.parse(this.player.currentTime)
+            //获取已播放视频长促
+            let startTime = parseInt(this.player.currentTime * 1000)
+            this.sendDanmuData = {
+              duration: 15000,
+              start: startTime,
+              txt: this.danMuContent,
+            }
+
+          }
         }
       },
       setSix() {
@@ -237,6 +257,7 @@
           screenShot: this.screenShot,
           playsinline: true,
           autoplay: true,
+          crossOrigin: false,
           download: this.download,
           pip: this.pip,
           danmu: this.danMu,
@@ -248,7 +269,8 @@
           defaultOff: false,
           panel: false
         });
-      },
+      }
+
 
     }
   }
