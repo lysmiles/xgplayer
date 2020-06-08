@@ -120,7 +120,7 @@
         clientWidth: '',
         clientHeight: '',
         danMuId: 0,
-        sendDanmuData: {}
+        sendDanmuData: {} //组件返回的弹幕内容，发送给后台
       }
     },
     created() {
@@ -249,26 +249,52 @@
        * 初始化视频
        * */
       initXGPlayer(cameraMsg, length) {
-        this.player = new Player({
-          id: length + 'videoID',
-          url: cameraMsg.videoUrl,
-          width: this.clientWidth,
-          height: this.clientHeight,
-          screenShot: this.screenShot,
-          playsinline: true,
-          autoplay: true,
-          crossOrigin: false,
-          download: this.download,
-          pip: this.pip,
-          danmu: this.danMu,
-          area: {
-            start: 0,
-            end: 1
-          },
-          closeDefaultBtn: false,
-          defaultOff: false,
-          panel: false
-        });
+        if (this.playType == 'live') {
+          this.player = new Player({
+            id: length + 'videoID',
+            url: cameraMsg.videoUrl,
+            width: this.clientWidth,
+            height: this.clientHeight,
+            screenShot: this.screenShot,//截图
+            playsinline: true,
+            autoplay: true,
+            crossOrigin: false, //是否跨域
+            download: this.download, //下载视频
+            pip: this.pip, //画中画
+            danmu: this.danMu,
+            area: {
+              start: 0,
+              end: 1
+            },
+            closeDefaultBtn: false,
+            defaultOff: false,
+            panel: false
+          });
+        } else {
+          this.player = new Player({
+            id: length + 'videoID',
+            url: cameraMsg.videoUrl,
+            width: this.clientWidth,
+            height: this.clientHeight,
+            screenShot: this.screenShot,
+            playsinline: true,
+            autoplay: true,
+            crossOrigin: false,
+            download: this.download,
+            playbackRate: [0.5, 0.75, 1, 1.5, 2],//倍速播放列表
+            defaultPlaybackRate: 1,//默认倍速
+            pip: this.pip,
+            danmu: this.danMu,
+            area: {
+              start: 0,
+              end: 1
+            },
+            closeDefaultBtn: false,
+            defaultOff: false,
+            panel: false
+          });
+        }
+
       }
 
 
