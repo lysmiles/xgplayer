@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@liveqing/liveplayer": "^1.9.6",
+    "element-ui": "^2.13.2",
     "less": "^3.11.2",
     "less-loader": "^4.1.0",
     "vue": "^2.5.2",

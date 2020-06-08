@@ -1,13 +1,33 @@
 <template>
   <div class="hello">
     <div class="grid-content">
-      <i class="iconfont icon-fenpingfangshi2" title="一屏" @click="chooseSplitScreen(1)"></i>
-      <!--      <i class="iconfont icon-fenpingfangshi5" title="二屏" @click="chooseSplitScreen(2)"></i>-->
-      <i class="iconfont icon-fenpin2" title="四屏" @click="chooseSplitScreen(4)"></i>
-      <i class="iconfont icon-fenpingfangshi" title="九屏" @click="chooseSplitScreen(9)"></i>
-      <i class="iconfont icon-fenpingfangshi1" title="十六屏" @click="chooseSplitScreen(16)"></i>
-      {{clientHeight}}
-      {{clientWidth}}
+
+      <!-- UI组件为element-ui 的时候使用 -->
+      <div class="send-danmu">
+        <el-select v-model="chooseCameraId" placeholder="请选择设备" size="small">
+          <el-option
+            v-for="item in cameraList"
+            :key="item.cameraId"
+            :label="item.cameraName"
+            :value="item.cameraId">
+          </el-option>
+        </el-select>
+        <el-input
+          placeholder="请输入弹幕内容"
+          v-model="danMuContent"
+          style="width: 200px"
+          size="small"
+          clearable>
+        </el-input>
+        <el-button type="primary" size="small" @click="sendDanmu">发送弹幕</el-button>
+      </div>
+      <div>
+        <i class="iconfont icon-fenpingfangshi2" title="一屏" @click="chooseSplitScreen(1)"></i>
+        <!--      <i class="iconfont icon-fenpingfangshi5" title="二屏" @click="chooseSplitScreen(2)"></i>-->
+        <i class="iconfont icon-fenpin2" title="四屏" @click="chooseSplitScreen(4)"></i>
+        <i class="iconfont icon-fenpingfangshi" title="九屏" @click="chooseSplitScreen(9)"></i>
+        <i class="iconfont icon-fenpingfangshi1" title="十六屏" @click="chooseSplitScreen(16)"></i>
+      </div>
     </div>
     <div class="video-content">
 
@@ -36,6 +56,20 @@
       cameraId: {
         type: String,
         default: ''
+      },
+      /**
+       * 设备名称
+       * */
+      cameraName: {
+        type: String,
+        default: ''
+      },
+      /**
+       * 弹幕
+       * */
+      danMu: {
+        type: Object,
+        default: {}
       },
       /**
        * 是否支持截屏（默认支持）
@@ -72,6 +106,8 @@
       return {
         player: '',
         splitScreen: 4,
+        chooseCameraId: '',
+        danMuContent: '',
         videoStyles: '',
         cameraList: [],
         clientWidth: '',
@@ -84,7 +120,6 @@
     watch: {
       'cameraId'(val) {
         if (val) {
-
           this.filterData(val)
         }
       }
@@ -95,7 +130,25 @@
 
     },
     methods: {
-      setSix(){
+      /**
+       * 发送弹幕
+       * */
+      sendDanmu() {
+        console.log(this.chooseCameraId, 'id')
+        if (this.cameraList && this.cameraList.length > 0) {
+          this.cameraList.map(item => {
+            if (this.chooseCameraId == item.cameraId) {
+                  this.player.danmu.sendComment({  //发送弹幕
+                    duration: 15000,
+                    id: this.danmu.comments.length + 1,
+                    start: 5000,
+                    txt: this.danMuContent,
+                  })
+            }
+          })
+        }
+      },
+      setSix() {
         window.onload = () => {
           this.clientWidth = document.getElementById('1videoID').clientWidth
           this.clientHeight = document.getElementById('1videoID').clientHeight
@@ -108,7 +161,8 @@
         if (this.cameraList && this.cameraList.length <= 0) {
           let obj = {
             cameraId: val,
-            videoUrl: this.videoUrl
+            videoUrl: this.videoUrl,
+            cameraName: this.cameraName
           }
           this.cameraList.push(obj)
         } else {
@@ -118,7 +172,8 @@
             this.player.destroy()
             let obj = {
               cameraId: val,
-              videoUrl: this.videoUrl
+              videoUrl: this.videoUrl,
+              cameraName: this.cameraName
             }
             this.cameraList.push(obj)
           } else if (this.cameraList.length < this.splitScreen) {
@@ -127,6 +182,7 @@
               if (val !== item.cameraId) {
                 obj.cameraId = val
                 obj.videoUrl = this.videoUrl
+                obj.cameraName = this.cameraName
               }
 
             })
@@ -155,6 +211,9 @@
         }
         // this.initXGPlayer()
       },
+      /**
+       * 设置屏幕样式
+       * */
       setScreenStyle() {
         if (this.splitScreen == 1) {
           this.videoStyles = 'width:100% !important;height:100% !important'
@@ -165,15 +224,6 @@
         } else if (this.splitScreen == 16) {
           this.videoStyles = 'width:24%;height:24%;'
         }
-
-
-        // for (let n = 1; n <= this.splitScreen; n++) {
-        //   let obj = {
-        //     cameraId: '',
-        //     url: '',
-        //   }
-        //   this.cameraList.push(obj)
-        // }
       },
       /**
        * 初始化视频
@@ -189,21 +239,15 @@
           autoplay: true,
           download: this.download,
           pip: this.pip,
+          danmu: this.danMu,
+          area: {
+            start: 0,
+            end: 1
+          },
+          closeDefaultBtn: false,
+          defaultOff: false,
+          panel: false
         });
-
-        // this.cameraList.map((item, i) => {
-        //   if (item.videoUrl && item.videoUrl !== '') {
-        //
-        //     // console.log(width, 'width')
-        //
-        //   }
-        //
-        // })
-        //
-        // console.log(this.player, 'player')
-        // // }
-        // console.log(this.cameraList, 'videoID')
-
       },
 
     }
@@ -220,8 +264,12 @@
       height: 40px;
       width: 100%;
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
       align-items: center;
+
+      .send-danmu {
+        margin-left: 1%;
+      }
 
       i {
         margin: 0 10px;
