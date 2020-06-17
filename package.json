@@ -18,6 +18,7 @@
     "less-loader": "^4.1.0",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1",
+    "xgplayer-hls.js": "^2.2.3",
     "xgplayer-vue": "^1.1.5"
   },
   "devDependencies": {

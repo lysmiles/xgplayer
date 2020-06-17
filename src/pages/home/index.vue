@@ -16,7 +16,7 @@
           :camera-name="cameraName"
           :dan-mu="danMu"
           :play-type="playType"
-
+          :pip="true"
         >
 
         </xg-player>
