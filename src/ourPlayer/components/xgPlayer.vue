@@ -1,5 +1,12 @@
 <template>
   <div class="video-content">
+    <!--
+
+    在模板中使用计算属性localVideoList，目的只是能触发逻辑，界面上不用出现，所以隐藏起来
+    如果使用监听选项watch，监听传入的视频数组，因为代码中包含改变数组的逻辑，整块watch代码会无限循环
+
+    -->
+    <p style="display: none;">{{localVideoList.length}}</p>
     <div class="video-fix" :style="videoStyles" v-for="item of splitScreenNum" :key="item" :id="item + 'videoID'"></div>
   </div>
 </template>
@@ -54,7 +61,8 @@
         validator: function (value) {
           // 这个值必须匹配下列数字中的一个
           return [1, 4, 9, 16].indexOf(value) !== -1
-        }
+        },
+        default: 1
       },
       /**
        *  视频数据
@@ -62,29 +70,53 @@
       videoList: {
         type: Array,
         default() {
-          return [
-            {
-              cameraId: 1,
-              cameraName: '',
-              cameraUrl: '',
-            }
-          ]
+          return []
+        }
+      },
+      /**
+       *  单个视频源
+       */
+      videoUrl: {
+        type: String,
+        default: ''
+      },
+      /**
+       * 清晰度数据
+       */
+      definitionList: {
+        type: Array,
+        default() {
+          return []
         }
       }
     },
     data() {
       return {
-        // 播放器实例对象
+        // 单个播放器对象
         player: null,
-        chooseCameraId: '',
-        videoStyles: '',
+        // 播放器实例对象数组
+        players: [],
         clientWidth: '',
         clientHeight: '',
+        videoStyles: '',
         videoStyleOptions: {
           1: 'width:100% !important;height:100% !important',
           4: 'width:49% !important;height:49% !important;',
           9: 'width:33%;height:33%;',
           16: 'width:24%;height:24%;',
+        },
+        videoOptions: {
+          id: '', // 播放器容器DOM的ID
+          url: '', // 视频源
+          width: 0, // 宽度
+          height: 0, // 高度
+          screenShot: true,// 是否开启截图
+          playsinline: true, // 该选项在手机观看时，是否开启ios和微信的内联模式
+          autoplay: true, // 是否自动播放
+          crossOrigin: false, // 是否跨域
+          download: true, //是否下载视频
+          pip: true, // 是否开启画中画
+          definitionActive: 'hover', // 修改清晰度控件的触发方式
         }
       }
     },
@@ -92,175 +124,174 @@
       /**
        * 监听分屏数变化
        */
-      splitScreen(val) {
-          this.chooseSplitScreen()
+      splitScreenNum(val) {
+        let len = this.videoList.length
+        if (len > val) {
+          this.videoList.splice(val, len - val)
+          this.players.forEach((player, index) => {
+            if (index >= val) {
+              player.destroy()
+            }
+          })
+          this.players.splice(val, len - val)
+        }
+        this.setScreenStyle()
       },
       /**
-       * 监听视频列表
+       * 处理传入的单个视频源
        */
-      videoList(val) {
-        let len = val.length
-        this.initXGPlayer(val[len - 1], len)
+      videoUrl(val) {
+        if (this.videoList.length !== 0) throw new Error('video-list 与 video-url 不能混用')
+        this.initVideo(val)
       }
-
     },
     mounted() {
+      // 初始化视频样式
       this.setScreenStyle()
-      // this.setSix()
+      // 处理视频源混用，两者同时存在，抛出错误
+      if (this.videoList.length !== 0 && this.videoUrl !== '') {
+        throw new Error('video-list 与 video-url 不能混用')
+      }
+      // 初始化时，外部url不为空，则直接播放
+      if (this.videoUrl) this.initVideo(this.videoUrl)
     },
     computed: {
+      /**
+       * 处理不合理的分屏数
+       */
       splitScreenNum() {
         if (this.splitScreen === 1 || this.splitScreen === 4 || this.splitScreen === 9 || this.splitScreen === 16) {
           return this.splitScreen
         } else {
           return 1
         }
+      },
+      /**
+       *  监听视频数组的变化
+       */
+      localVideoList() {
+        let len = this.videoList.length
+        // 当视频数组为空时，跳出函数，避免报错
+        if (len === 0) {
+          return []
+        }
+        // 新加入的视频url，如果是重复的，则不加入
+        let lastVideoUrl = this.videoList[len - 1].url
+        let flagIndex = this.videoList.findIndex(item => item.url === lastVideoUrl)
+
+        // 如果找到的坐标就是新加入视频的坐标，则没有重复
+        if (flagIndex === len - 1) {
+          // 当数组长度超过当前分屏数时，用新元素替换原数组最后一位元素
+          if (len > this.splitScreenNum) {
+            /*
+            *   不能省略该临时变量lastVideoItem，
+            *   js执行时会从左到右执行，
+            *   如果这样写
+            *   this.videoList[this.videoList.length - 1] = this.videoList.pop()
+            *   左侧先执行，得到原数组长度的最后一位下标
+            *   右侧后执行，返回原数组最后一个元素
+            *   最后将右侧赋值给左侧
+            *   结果就是该数组永远也不会改变
+            * */
+            let lastVideoItem = this.videoList.pop()
+            this.videoList[this.videoList.length - 1] = lastVideoItem
+          }
+          this.initVideos(this.videoList[this.videoList.length - 1], this.videoList.length)
+          return this.videoList
+        } else {
+          this.videoList.pop()
+        }
+        return []
       }
     },
     methods: {
-      setSix() {
-        window.onload = () => {
-          this.clientWidth = document.getElementById('1videoID').clientWidth
-          this.clientHeight = document.getElementById('1videoID').clientHeight
-        }
+      /**
+       * @description 设置视频配置参数宽高
+       * @return {null}
+       */
+      setVideoView() {
+        const videoDom = document.getElementById('1videoID')
+        this.clientWidth = videoDom.clientWidth
+        this.clientHeight = videoDom.clientHeight
       },
       /**
-       * 数据筛选
-       * */
-      filterData(val) {
-        if (this.videoList && this.videoList.length <= 0) {
-          let obj = {
-            cameraId: val,
-            videoUrl: this.videoUrl,
-            cameraName: this.cameraName
-          }
-          this.videoList.push(obj)
-        } else {
-          if (this.videoList.length >= this.splitScreenNum) {
-            let index = this.videoList.length - (this.splitScreenNum - 1)
-            this.videoList.splice((this.splitScreenNum - 1), index)
-            // this.player.destroy()
-            let obj = {
-              cameraId: val,
-              videoUrl: this.videoUrl,
-              cameraName: this.cameraName
-            }
-            this.videoList.push(obj)
-          } else if (this.videoList.length < this.splitScreenNum) {
-            let obj = {}
-            this.videoList.map((item, i) => {
-              if (val !== item.cameraId) {
-                obj.cameraId = val
-                obj.videoUrl = this.videoUrl
-                obj.cameraName = this.cameraName
-              }
-            })
-            this.videoList.push(obj)
-          }
-        }
-        let lastCamera = this.videoList.slice(-1)
-        if (lastCamera[0].videoUrl && lastCamera[0].videoUrl !== '') {
-          this.initXGPlayer(lastCamera[0], this.videoList.length)
-        }
-        this.setScreenStyle()
-
-      },
-      /**
-       * 切换分屏
-       * */
-      chooseSplitScreen() {
-        // 改变dom样式
-        this.$nextTick(() => {
-          this.setScreenStyle()
-        })
-        // this.setSix()
-        if (this.videoList.length > this.splitScreenNum) {
-          let index = this.videoList.length - (this.splitScreenNum)
-          this.videoList.splice((this.splitScreenNum), index)
-          // this.player.destroy()
-        }
-        // this.initXGPlayer()
-      },
-      /**
-       * 设置屏幕样式
-       * */
+       * @description 设置分屏样式
+       * @return {null}
+       */
       setScreenStyle() {
+        this.setVideoView()
+        this.$nextTick(() => {
           this.videoStyles = this.videoStyleOptions[`${this.splitScreenNum}`]
+        })
       },
       /**
-       * 初始化视频
-       * */
-      initXGPlayer(cameraMsg, length) {
-
-        // 直播为m3u8格式视频
-        if (this.live) {
-          // 创建直播流参数
-          const liveStreamOptions = {
-            id: length + 'videoID',
-            url: cameraMsg.cameraUrl,
-            width: this.clientWidth,
-            height: this.clientHeight,
-            screenShot: this.screenShot,//截图
-            playsinline: true,
-            autoplay: true,
-            crossOrigin: false, //是否跨域
-            download: this.download, //下载视频
-            pip: this.pip, //画中画
-            area: {
-              start: 0,
-              end: 1
-            },
-            closeDefaultBtn: false,
-            defaultOff: false,
-            panel: false
+       * @description 初始化多个视频源
+       * @param cameraMsg {Object} - 视频源对象
+       * @param length {Number} - 数组下标
+       * @return {null}
+       */
+      initVideos(cameraMsg, length) {
+        const videoOptions = {...this.videoOptions}
+        // 不同的配置需要单独修改
+        videoOptions.id = length + 'videoID'
+        videoOptions.url = cameraMsg.url
+        // 传入的清晰度列表
+        this.createPlayers(videoOptions, length)
+      },
+      /**
+       * @description 初始化单个视频源
+       * @param url {String} - 视频源地址
+       * @return {null}
+       */
+      initVideo(url) {
+        const videoOptions = {...this.videoOptions}
+        // 不同的配置需要单独修改
+        videoOptions.id = '1videoID'
+        videoOptions.url = url
+        this.createPlayer(videoOptions)
+      },
+      /**
+       * @description 创建多个视频对象
+       * @param options {Object} - 配置对象
+       * @param length {Number} - 数组下标
+       * @return {null}
+       */
+      createPlayers(options, length) {
+        this.$nextTick(() => {
+          if (this.live) {
+            // 如果已经被占用，则重新拉流
+            const currPlayer = this.players[length - 1]
+            if (currPlayer) return currPlayer.src = options.url
+            this.players[length - 1] = new HlsJsPlayer(options)
+            // 如果传入清晰度数据，则开启切换清晰度功能
+            if (this.definitionList.length) this.players[length - 1].emit('resourceReady', this.definitionList)
+          } else {
+            const currPlayer = this.players[length - 1]
+            if (currPlayer) return currPlayer.src = options.url
+            this.players[length - 1] = new Player(options)
+            if (this.definitionList.length) this.players[length - 1].emit('resourceReady', this.definitionList)
           }
-          // 如果分屏数为 1，那么切换视频时在当前容器进行修改
-          if (this.splitScreenNum === 1) {
-            // player实例已初始化时，先销毁该实例
-            if (this.player) this.player.destroy()
-            liveStreamOptions.id = '1videoID'
+        })
+      },
+      /**
+       * @description 创建单个视频对象
+       * @param options {Object} - 配置对象
+       * @return {null}
+       */
+      createPlayer(options) {
+        this.$nextTick(() => {
+          if (this.live) {
+            if (this.player) return this.player.src = options.url
+            this.player = new HlsJsPlayer(options)
+            if (this.definitionList.length) this.player.emit('resourceReady', this.definitionList)
+
+          } else {
+            if (this.player) return this.player.src = options.url
+            this.player = new Player(options)
+            if (this.definitionList.length) this.player.emit('resourceReady', this.definitionList)
           }
-          this.$nextTick(() => {
-            this.player = new HlsJsPlayer(liveStreamOptions);
-          })
-
-        } else {
-          // 创建视频参数
-          const videoOptions = {
-            id: length + 'videoID',
-            url: cameraMsg.cameraUrl,
-            width: this.clientWidth,
-            height: this.clientHeight,
-            screenShot: this.screenShot,
-            playsinline: true,
-            autoplay: true,
-            crossOrigin: false,
-            download: this.download,
-            playbackRate: [0.5, 0.75, 1, 1.5, 2],//倍速播放列表
-            defaultPlaybackRate: 1,//默认倍速
-            pip: this.pip,
-            area: {
-              start: 0,
-              end: 1
-            },
-            closeDefaultBtn: false,
-            defaultOff: false,
-            panel: false
-          }
-          // 如果分屏数为 1，那么切换视频时在当前容器进行修改
-          if (this.splitScreenNum === 1) {
-            videoOptions.id = '1videoID'
-          }
-          // 视频为mp4格式视频
-          this.$nextTick(() => {
-            this.player = new Player(videoOptions);
-          })
-
-        }
-
-      }
-
-
+        })
+      },
     }
   }
 </script>
