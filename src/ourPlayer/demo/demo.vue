@@ -18,25 +18,25 @@
         </div>
       </div>
       <div class="play-content">
+        <!--多个视频源测试-->
         <xg-player
           :live="live"
           :split-screen="splitScreen"
           :video-list="videoList"
           :pip="true"
-          :definition-list="definitionList"
         >
         </xg-player>
+        <!--单个视频源测试-->
         <!--<xg-player
           :live="live"
           :pip="true"
           :video-url="url"
+          :definition-list="definitionList"
         >
         </xg-player>-->
 
       </div>
     </div>
-
-
   </div>
 
 </template>
@@ -60,6 +60,20 @@
         // 测试视频数据
         videoData: [
           {
+            definitionList: [ //  清晰度数据
+              {
+                name: '标清', // 渲染为清晰度切换播放栏选项
+                url: ''
+              },
+              {
+                name: '高清',
+                url: ''
+              },
+              {
+                name: '超清',
+                url: ''
+              }
+            ],
             cameraId: '1001',
             cameraName: '一楼办公室',
             url: 'http://222.213.16.51:8050/M3u8File?01104849A400571E500_01104849A400571E500_1590735411_1590735458.m3u8',
@@ -521,10 +535,10 @@
           },
 
         ],
-        // 视频清晰度数据
+        // 单个视频清晰度数据
         definitionList: [
-         /* {name: '高清', url: 'http://222.213.16.51:8050/M3u8File?01104849A400571E500_01104849A400571E500_1591257957_1591258080.m3u8'},
-          {name: '超清', url: 'http://222.213.16.51:8050/M3u8File?01104849A400571E500_01104849A400571E500_1591160434_1591160499.m3u8'}*/
+          /* {name: '高清', url: 'http://222.213.16.51:8050/M3u8File?01104849A400571E500_01104849A400571E500_1591257957_1591258080.m3u8'},
+           {name: '超清', url: 'http://222.213.16.51:8050/M3u8File?01104849A400571E500_01104849A400571E500_1591160434_1591160499.m3u8'}*/
         ]
       }
     },

@@ -148,10 +148,7 @@
     mounted() {
       // 初始化视频样式
       this.setScreenStyle()
-      // 处理视频源混用，两者同时存在，抛出错误
-      if (this.videoList.length !== 0 && this.videoUrl !== '') {
-        throw new Error('video-list 与 video-url 不能混用')
-      }
+
       // 初始化时，外部url不为空，则直接播放
       if (this.videoUrl) this.initVideo(this.videoUrl)
     },
@@ -170,6 +167,10 @@
        *  监听视频数组的变化
        */
       localVideoList() {
+        // 处理视频源混用，两者同时存在，抛出错误
+        if (this.videoList.length !== 0 && this.videoUrl !== '') {
+          throw new Error('video-list 与 video-url 不能混用')
+        }
         let len = this.videoList.length
         // 当视频数组为空时，跳出函数，避免报错
         if (len === 0) {
@@ -251,6 +252,31 @@
         this.createPlayer(videoOptions)
       },
       /**
+       * @description 触发清晰度设置
+       * @param options {Object} -  配置对象
+       * @param length {Number} -  数组下标
+       * @return {null}
+       */
+      emitDefinition(options, length) {
+        /*
+           * 开启多个视频源清晰度切换功能，
+           * 需要同时满足
+           * props中的definitionList为空，
+           * options中definitionList不为空,
+           * 否则控制台报错
+           *
+           * */
+        const singleDefinitionListLen = this.definitionList.length
+        const multiDefinitionListLen = options.definitionList.length
+        if (!singleDefinitionListLen && multiDefinitionListLen) {
+          this.players[length - 1].emit('resourceReady', options.definitionList)
+        } else if (singleDefinitionListLen && !multiDefinitionListLen) {
+          this.player.emit('resourceReady', this.definitionList)
+        } else if (singleDefinitionListLen && multiDefinitionListLen){
+          throw new Error('不能同时传入单个和多个视频源所需要的definitionList')
+        }
+      },
+      /**
        * @description 创建多个视频对象
        * @param options {Object} - 配置对象
        * @param length {Number} - 数组下标
@@ -258,19 +284,13 @@
        */
       createPlayers(options, length) {
         this.$nextTick(() => {
-          if (this.live) {
-            // 如果已经被占用，则重新拉流
-            const currPlayer = this.players[length - 1]
-            if (currPlayer) return currPlayer.src = options.url
-            this.players[length - 1] = new HlsJsPlayer(options)
-            // 如果传入清晰度数据，则开启切换清晰度功能
-            if (this.definitionList.length) this.players[length - 1].emit('resourceReady', this.definitionList)
+          const currPlayer = this.players[length - 1]
+          if (currPlayer) {
+            currPlayer.src = options.url
           } else {
-            const currPlayer = this.players[length - 1]
-            if (currPlayer) return currPlayer.src = options.url
-            this.players[length - 1] = new Player(options)
-            if (this.definitionList.length) this.players[length - 1].emit('resourceReady', this.definitionList)
+            this.players[length - 1] = this.live ? new HlsJsPlayer(options) : new Player(options)
           }
+          this.emitDefinition(options, length)
         })
       },
       /**
@@ -280,16 +300,12 @@
        */
       createPlayer(options) {
         this.$nextTick(() => {
-          if (this.live) {
-            if (this.player) return this.player.src = options.url
-            this.player = new HlsJsPlayer(options)
-            if (this.definitionList.length) this.player.emit('resourceReady', this.definitionList)
-
-          } else {
-            if (this.player) return this.player.src = options.url
-            this.player = new Player(options)
-            if (this.definitionList.length) this.player.emit('resourceReady', this.definitionList)
-          }
+            if (this.player) {
+              this.player.src = options.url
+            } else {
+              this.player = this.live ? new HlsJsPlayer(options) : new Player(options)
+            }
+         this.emitDefinition(options)
         })
       },
     }
