@@ -1,13 +1,20 @@
 # 起步
 安装西瓜视频
 ```
- npm install xgplayer
+ npm i xgplayer
 ```
 安装Hls插件
 ```
- npm install xgplayer-hls.js
+ npm i xgplayer-hls.js
 ```
-
+安装Mp4插件
+```
+npm i xgplayer-mp4
+```
+如果需要自定义样式，安装以下`loader`（自定义样式功能暂未开放）
+```
+npm i node-sass sass-loader raw-loader
+```
 # 功能详细
 ### 分屏
 1. 通过url对比，重复的视频不会播放，不会占用分屏板块
@@ -82,7 +89,8 @@
   }
 ]
 ```
-- 描述：仅在通过`video-url`传入单个视频源时使用。多个视频源需要通过新增对象属性`definitionList`来使用。
+- 描述：仅在通过`video-url`传入单个视频源时使用，切换`video-url`时，需要同时切换该选项，保持视频源与该视频源清晰度资源同步。
+        多个视频源需要通过新增对象属性`definitionList`来使用。
 
 ### 直播
 - 配置项：`live`
@@ -115,5 +123,15 @@
 - 描述：视频缩小，脱离文档流，支持全屏拖拽。
 
 ## 事件
+### 监听视频重复
+- 配置项：`repeat-video`
+- 返回类型：Object
+- 返回值：重复的视频对象
+- 描述：当传入重复视频时，该事件触发。可在相应的处理函数中加入提示。
 
+### 监听视频播放错误
+- 配置项：`play-error`
+- 返回类型：Object
+- 返回值：出错的当前视频配置对象
+- 描述：当视频播放出错时，该事件触发。该事件对于同一视频源只触发一次。
 

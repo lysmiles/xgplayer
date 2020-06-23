@@ -13,8 +13,10 @@
 
 <script>
   import Player from 'xgplayer'
+  // import 'xgplayer-mp4'
   import 'xgplayer'
   import HlsJsPlayer from 'xgplayer-hls.js'
+  // import '../assets/css/.xgplayer/skin/index.js'
 
   export default {
     name: "xgPlayer",
@@ -113,7 +115,7 @@
           screenShot: true,// 是否开启截图
           playsinline: true, // 该选项在手机观看时，是否开启ios和微信的内联模式
           autoplay: true, // 是否自动播放
-          crossOrigin: false, // 是否跨域
+          crossOrigin: true, // 是否跨域
           download: true, //是否下载视频
           pip: true, // 是否开启画中画
           definitionActive: 'hover', // 修改清晰度控件的触发方式
@@ -167,11 +169,11 @@
        *  监听视频数组的变化
        */
       localVideoList() {
+        let len = this.videoList.length
         // 处理视频源混用，两者同时存在，抛出错误
-        if (this.videoList.length !== 0 && this.videoUrl !== '') {
+        if (len !== 0 && this.videoUrl !== '') {
           throw new Error('video-list 与 video-url 不能混用')
         }
-        let len = this.videoList.length
         // 当视频数组为空时，跳出函数，避免报错
         if (len === 0) {
           return []
@@ -200,7 +202,8 @@
           this.initVideos(this.videoList[this.videoList.length - 1], this.videoList.length)
           return this.videoList
         } else {
-          this.videoList.pop()
+          // 触发视频重复事件
+          this.$emit('repeat-video', this.videoList.pop())
         }
         return []
       }
@@ -236,6 +239,7 @@
         // 不同的配置需要单独修改
         videoOptions.id = length + 'videoID'
         videoOptions.url = cameraMsg.url
+        videoOptions.definitionList = cameraMsg.definitionList
         // 传入的清晰度列表
         this.createPlayers(videoOptions, length)
       },
@@ -272,7 +276,7 @@
           this.players[length - 1].emit('resourceReady', options.definitionList)
         } else if (singleDefinitionListLen && !multiDefinitionListLen) {
           this.player.emit('resourceReady', this.definitionList)
-        } else if (singleDefinitionListLen && multiDefinitionListLen){
+        } else if (singleDefinitionListLen && multiDefinitionListLen) {
           throw new Error('不能同时传入单个和多个视频源所需要的definitionList')
         }
       },
@@ -290,6 +294,10 @@
           } else {
             this.players[length - 1] = this.live ? new HlsJsPlayer(options) : new Player(options)
           }
+          // 视频加载失败时触发
+          this.players[length - 1].once('error', () => {
+            this.$emit('play-error', options)
+          })
           this.emitDefinition(options, length)
         })
       },
@@ -300,12 +308,16 @@
        */
       createPlayer(options) {
         this.$nextTick(() => {
-            if (this.player) {
-              this.player.src = options.url
-            } else {
-              this.player = this.live ? new HlsJsPlayer(options) : new Player(options)
-            }
-         this.emitDefinition(options)
+          if (this.player) {
+            this.player.src = options.url
+          } else {
+            this.player = this.live ? new HlsJsPlayer(options) : new Player(options)
+          }
+          // 视频加载失败时触发
+          this.player.once('error', () => {
+            this.$emit('play-error', options)
+          })
+          this.emitDefinition(options, 1)
         })
       },
     }

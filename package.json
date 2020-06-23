@@ -16,9 +16,13 @@
     "element-ui": "^2.13.2",
     "less": "^3.11.2",
     "less-loader": "^4.1.0",
+    "node-sass": "^4.14.1",
+    "raw-loader": "^4.0.1",
+    "sass-loader": "^7.3.1",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1",
     "xgplayer-hls.js": "^2.2.3",
+    "xgplayer-mp4": "^1.1.8",
     "xgplayer-vue": "^1.1.5"
   },
   "devDependencies": {
