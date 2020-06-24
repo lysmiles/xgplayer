@@ -19,7 +19,7 @@
       </div>
       <div class="play-content">
         <!--多个视频源测试-->
-        <xg-player
+        <inphase-player
           :live="live"
           :split-screen="splitScreen"
           :video-list="videoList"
@@ -27,8 +27,9 @@
           @repeat-video="onRepeatVideo"
           @play-error="onPlayError"
         />
+
         <!--单个视频源测试-->
-        <!--<xg-player
+        <!--<inphase-player
           :live="live"
           :pip="true"
           :video-url="url"
@@ -42,15 +43,15 @@
 </template>
 
 <script>
-  // 引入西瓜视频组件
-  import xgPlayer from '../components/xgPlayer'
+  // 引入inphase视频组件
+  import InphasePlayer from '.'
   // 测试视频数据
-  import m3u8VideoData from '../assets/data/m3u8VideoData'
-  import mp4VideoData from '../assets/data/mp4VideoData'
+  import m3u8VideoData from './assets/data/m3u8VideoData'
+  import mp4VideoData from './assets/data/mp4VideoData'
   export default {
     name: "demo",
     components: {
-      xgPlayer
+      InphasePlayer
     },
     data() {
       return {

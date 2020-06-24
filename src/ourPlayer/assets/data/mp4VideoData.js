@@ -3,15 +3,15 @@ export default [
     definitionList: [ //  清晰度数据
       {
         name: '标清', // 渲染为清晰度切换播放栏选项
-        url: ''
+        url: 'http://vfx.mtime.cn/Video/2019/03/17/mp4/190317150237409904.mp4'
       },
       {
         name: '高清',
-        url: ''
+        url: 'http://vfx.mtime.cn/Video/2019/03/17/mp4/190317150237409904.mp4'
       },
       {
         name: '超清',
-        url: ''
+        url: 'http://vfx.mtime.cn/Video/2019/03/17/mp4/190317150237409904.mp4'
       }
     ],
     cameraId: '1001',
@@ -42,15 +42,15 @@ export default [
     definitionList: [ //  清晰度数据
       {
         name: '标清', // 渲染为清晰度切换播放栏选项
-        url: ''
+        url: 'http://vfx.mtime.cn/Video/2019/03/21/mp4/190321153853126488.mp4'
       },
       {
         name: '高清',
-        url: ''
+        url: 'http://vfx.mtime.cn/Video/2019/03/21/mp4/190321153853126488.mp4'
       },
       {
         name: '超清',
-        url: ''
+        url: 'http://vfx.mtime.cn/Video/2019/03/21/mp4/190321153853126488.mp4'
       }
     ],
     cameraId: '1002',

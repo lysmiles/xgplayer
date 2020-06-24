@@ -13,13 +13,16 @@
 
 <script>
   import Player from 'xgplayer'
+  // 执行关闭按钮插件
+  import './plugins/closeVideo'
   // import 'xgplayer-mp4'
   import 'xgplayer'
   import HlsJsPlayer from 'xgplayer-hls.js'
+  // 自定义样式
   // import '../assets/css/.xgplayer/skin/index.js'
 
   export default {
-    name: "xgPlayer",
+    name: "inphasePlayer",
     props: {
       /**
        * 是否为直播(默认支持)
@@ -119,6 +122,7 @@
           download: true, //是否下载视频
           pip: true, // 是否开启画中画
           definitionActive: 'hover', // 修改清晰度控件的触发方式
+          poster: '', // 封面图
         }
       }
     },
@@ -230,16 +234,17 @@
       },
       /**
        * @description 初始化多个视频源
-       * @param cameraMsg {Object} - 视频源对象
+       * @param videoMsg {Object} - 视频源对象
        * @param length {Number} - 数组下标
        * @return {null}
        */
-      initVideos(cameraMsg, length) {
+      initVideos(videoMsg, length) {
         const videoOptions = {...this.videoOptions}
         // 不同的配置需要单独修改
         videoOptions.id = length + 'videoID'
-        videoOptions.url = cameraMsg.url
-        videoOptions.definitionList = cameraMsg.definitionList
+        videoOptions.url = videoMsg.url
+        videoOptions.poster = videoMsg.poster
+        videoOptions.definitionList = videoMsg.definitionList
         // 传入的清晰度列表
         this.createPlayers(videoOptions, length)
       },
@@ -253,32 +258,8 @@
         // 不同的配置需要单独修改
         videoOptions.id = '1videoID'
         videoOptions.url = url
+        videoOptions.poster = this.poster
         this.createPlayer(videoOptions)
-      },
-      /**
-       * @description 触发清晰度设置
-       * @param options {Object} -  配置对象
-       * @param length {Number} -  数组下标
-       * @return {null}
-       */
-      emitDefinition(options, length) {
-        /*
-           * 开启多个视频源清晰度切换功能，
-           * 需要同时满足
-           * props中的definitionList为空，
-           * options中definitionList不为空,
-           * 否则控制台报错
-           *
-           * */
-        const singleDefinitionListLen = this.definitionList.length
-        const multiDefinitionListLen = options.definitionList.length
-        if (!singleDefinitionListLen && multiDefinitionListLen) {
-          this.players[length - 1].emit('resourceReady', options.definitionList)
-        } else if (singleDefinitionListLen && !multiDefinitionListLen) {
-          this.player.emit('resourceReady', this.definitionList)
-        } else if (singleDefinitionListLen && multiDefinitionListLen) {
-          throw new Error('不能同时传入单个和多个视频源所需要的definitionList')
-        }
       },
       /**
        * @description 创建多个视频对象
@@ -319,6 +300,33 @@
           })
           this.emitDefinition(options, 1)
         })
+      },
+      /**
+       * @description 触发清晰度设置
+       * @param options {Object} -  配置对象
+       * @param length {Number} -  数组下标
+       * @return {null}
+       */
+      emitDefinition(options, length) {
+        /*
+           * 开启多个视频源清晰度切换功能，
+           * 需要同时满足
+           * props中的definitionList为空，
+           * options中definitionList不为空,
+           * 否则控制台报错。
+           * 开启单个视频源则反之。
+           * */
+        const singleDefinitionListLen = this.definitionList.length
+        const multiDefinitionListLen = options.definitionList.length
+        if (!singleDefinitionListLen && multiDefinitionListLen) {
+          // 多个视频源
+          this.players[length - 1].emit('resourceReady', options.definitionList)
+        } else if (singleDefinitionListLen && !multiDefinitionListLen) {
+          // 单个视频源
+          this.player.emit('resourceReady', this.definitionList)
+        } else if (singleDefinitionListLen && multiDefinitionListLen) {
+          throw new Error('不能同时传入单个和多个视频源所需要的definitionList')
+        }
       },
     }
   }

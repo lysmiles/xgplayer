@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Home from '../pages/home/index'
-import Demo from '../ourPlayer/demo/demo'
+import Demo from '../ourPlayer/demo'
 
 Vue.use(Router)
 
