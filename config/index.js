@@ -10,7 +10,15 @@ module.exports = {
     // Paths
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
-    proxyTable: {},
+    proxyTable: {
+    /*  '/yyxsg215': {
+        target: 'http://222.213.16.55:20301/',  // 后台接口域名
+        changeOrigin: true,  //是否跨域
+        // pathRewrite:{
+        //   '^/rng':''
+        // }
+      }*/
+    },
 
     // Various Dev Server settings
     host: 'localhost', // can be overwritten by process.env.HOST

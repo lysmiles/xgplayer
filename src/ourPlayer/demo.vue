@@ -55,7 +55,7 @@
     },
     data() {
       return {
-        url: 'http://222.213.16.51:8050/M3u8File?01104849A400571E500_01104849A400571E500_1591160434_1591160499.m3u8',
+        url: 'http://222.213.16.54:20301/a5e08f4fa3dfdbf9349adf1a216e4e1a.m3u8',
         live: false,
         splitScreen: 1,
         // 与播放器内部数据数组指向同一地址
@@ -64,8 +64,8 @@
         videoData: [],
         // 单个视频清晰度数据
         definitionList: [
-           {name: '高清', url: 'http://222.213.16.51:8050/M3u8File?01104849A400571E500_01104849A400571E500_1591257957_1591258080.m3u8'},
-           {name: '超清', url: 'http://222.213.16.51:8050/M3u8File?01104849A400571E500_01104849A400571E500_1591160434_1591160499.m3u8'}
+           {name: '高清', url: ''},
+           {name: '超清', url: ''}
         ]
       }
     },
@@ -99,7 +99,7 @@
        * @return  {null}
        */
       onRepeatVideo(repeatItem) {
-        console.log(repeatItem)
+        // console.log(repeatItem)
       },
       /**
        * @description 处理视频播放错误
@@ -107,7 +107,7 @@
        * @return {null}
        */
       onPlayError(currItem) {
-        console.log(currItem)
+        // console.log(currItem)
       }
     },
   }

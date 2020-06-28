@@ -15,8 +15,8 @@
   import Player from 'xgplayer'
   // 执行关闭按钮插件
   import './plugins/closeVideo'
-  // import 'xgplayer-mp4'
   import 'xgplayer'
+  import 'xgplayer-mp4'
   import HlsJsPlayer from 'xgplayer-hls.js'
   // 自定义样式
   // import '../assets/css/.xgplayer/skin/index.js'
@@ -123,6 +123,31 @@
           pip: true, // 是否开启画中画
           definitionActive: 'hover', // 修改清晰度控件的触发方式
           poster: '', // 封面图
+          danmu: {
+            comments: [  //弹幕数组
+              {
+                duration: 15000, //弹幕持续显示时间,毫秒(最低为5000毫秒)
+                id: '1', //弹幕id，需唯一
+                start: 3000, //弹幕出现时间，毫秒
+                prior: true, //该条弹幕优先显示，默认false
+                color: true, //该条弹幕为彩色弹幕，默认false
+                txt: '长弹幕长弹幕长弹幕长弹幕长弹幕长弹幕长弹幕长弹幕长弹幕长弹幕', //弹幕文字内容
+                style: {  //弹幕自定义样式
+                  color: '#ff9500',
+                  fontSize: '20px',
+                  border: 'solid 1px #ff9500',
+                  borderRadius: '50px',
+                  padding: '5px 11px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                },
+                mode: 'top' //显示模式，top顶部居中，bottom底部居中，scroll滚动，默认为scroll
+              }
+            ],
+            area: {  //弹幕显示区域
+              start: 0, //区域顶部到播放器顶部所占播放器高度的比例
+              end: 1 //区域底部到播放器顶部所占播放器高度的比例
+            },
+          }
         }
       }
     },
@@ -182,6 +207,20 @@
         if (len === 0) {
           return []
         }
+        // 通过关闭按钮插件关闭后，默认视频源为当前网站origin
+        const origin = window.location.origin + '/'
+        // 找出第一个无视频源播放器实例
+        const firstClosedPlayer = this.players.find((player) => {
+          return player.src === origin
+        })
+        // 找到之后播放同时切换清晰度视频源
+        if (firstClosedPlayer) {
+          const pop = this.videoList.pop()
+          firstClosedPlayer.src = pop.url
+          firstClosedPlayer.emit('resourceReady', pop.definitionList)
+          return []
+        }
+
         // 新加入的视频url，如果是重复的，则不加入
         let lastVideoUrl = this.videoList[len - 1].url
         let flagIndex = this.videoList.findIndex(item => item.url === lastVideoUrl)
@@ -277,7 +316,7 @@
           }
           // 视频加载失败时触发
           this.players[length - 1].once('error', () => {
-            this.$emit('play-error', options)
+            this.$emit('play-error', options, this.players[length - 1].error)
           })
           this.emitDefinition(options, length)
         })
@@ -296,7 +335,7 @@
           }
           // 视频加载失败时触发
           this.player.once('error', () => {
-            this.$emit('play-error', options)
+            this.$emit('play-error', options, this.player.error)
           })
           this.emitDefinition(options, 1)
         })
@@ -345,6 +384,9 @@
       background-color: #000;
     }
 
+  }
+  /deep/ .xgplayer-skin-default .xgplayer-definition .name {
+    right: 0;
   }
 
 </style>

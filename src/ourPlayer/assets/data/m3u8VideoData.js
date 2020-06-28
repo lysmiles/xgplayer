@@ -3,7 +3,7 @@ export default [
     definitionList: [ //  清晰度数据
       {
         name: '标清', // 渲染为清晰度切换播放栏选项
-        url: ''
+        url: 'http://222.213.16.54:20301/1025592edf6ac24c2df835e266534f0b.m3u8'
       },
       {
         name: '高清',
@@ -16,7 +16,7 @@ export default [
     ],
     cameraId: '1001',
     cameraName: '11111',
-    url: 'http://222.213.16.51:8050/M3u8File?01104849A400571E500_01104849A400571E500_1590735411_1590735458.m3u8',
+    url: 'http://222.213.16.54:20301/1025592edf6ac24c2df835e266534f0b.m3u8',
     // url: 'rtsp://Inphase:2KE496r8a@182.145.195.233:9500/DevCode=08102021122A3A0C400/DevAor=08102021122A3A0C400/StreamIndex=0',
     danmu: {
       comments: [
@@ -42,7 +42,7 @@ export default [
     definitionList: [ //  清晰度数据
       {
         name: '标清', // 渲染为清晰度切换播放栏选项
-        url: ''
+        url: 'http://222.213.16.54:20301/4375a5fca801cd5818a50d879fcf9542.m3u8'
       },
       {
         name: '高清',
@@ -55,7 +55,7 @@ export default [
     ],
     cameraId: '1002',
     cameraName: '22222',
-    url: 'http://222.213.16.51:8050/M3u8File?01104849A400571E500_01104849A400571E500_1591820219_1591820261.m3u8',
+    url: 'http://222.213.16.54:20301/4375a5fca801cd5818a50d879fcf9542.m3u8',
     danmu: {
       comments: [
         {
@@ -79,7 +79,7 @@ export default [
     definitionList: [ //  清晰度数据
       {
         name: '标清', // 渲染为清晰度切换播放栏选项
-        url: ''
+        url: 'http://222.213.16.54:20301/943d867256f82d5b5ca0c8d2338c39f4.m3u8'
       },
       {
         name: '高清',
@@ -92,7 +92,7 @@ export default [
     ],
     cameraId: '1003',
     cameraName: '333333',
-    url: 'http://222.213.16.51:8050/M3u8File?01104849A400571E500_01104849A400571E500_1591160434_1591160499.m3u8',
+    url: 'http://222.213.16.54:20301/943d867256f82d5b5ca0c8d2338c39f4.m3u8',
     danmu: {
       comments: [
         {
@@ -114,7 +114,7 @@ export default [
     definitionList: [ //  清晰度数据
       {
         name: '标清', // 渲染为清晰度切换播放栏选项
-        url: ''
+        url: 'http://222.213.16.54:20301/4ea32d207cedab9def466d3170a7d396.m3u8'
       },
       {
         name: '高清',
@@ -127,7 +127,7 @@ export default [
     ],
     cameraId: '1004',
     cameraName: '444444',
-    url: 'http://222.213.16.51:8050/M3u8File?01104849A400571E500_01104849A400571E500_1591257957_1591258080.m3u8',
+    url: 'http://222.213.16.54:20301/4ea32d207cedab9def466d3170a7d396.m3u8',
     danmu: {
       comments: [
         {
@@ -151,7 +151,7 @@ export default [
     definitionList: [ //  清晰度数据
       {
         name: '标清', // 渲染为清晰度切换播放栏选项
-        url: ''
+        url: 'http://222.213.16.54:20301/bc03b46d92a1a2f504e6d6dbd3d78aa4.m3u8'
       },
       {
         name: '高清',
@@ -164,7 +164,7 @@ export default [
     ],
     cameraId: '1005',
     cameraName: '555555',
-    url: 'http://222.213.16.51:8050/M3u8File?01104849A400571E500_01104849A400571E500_1591771140_1591771203.m3u8',
+    url: 'http://222.213.16.54:20301/bc03b46d92a1a2f504e6d6dbd3d78aa4.m3u8',
     danmu: {
       comments: [
         {
@@ -188,7 +188,7 @@ export default [
     definitionList: [ //  清晰度数据
       {
         name: '标清', // 渲染为清晰度切换播放栏选项
-        url: ''
+        url: 'http://222.213.16.54:20301/5b9b8d1cb4b063e9cd776a62a681d643.m3u8'
       },
       {
         name: '高清',
@@ -201,7 +201,7 @@ export default [
     ],
     cameraId: '1005',
     cameraName: '666666',
-    url: 'http://222.213.16.51:8050/M3u8File?01104849A400571E500_01104849A400571E500_1591771014_1591771036.m3u8',
+    url: 'http://222.213.16.54:20301/5b9b8d1cb4b063e9cd776a62a681d643.m3u8',
     danmu: {
       comments: [
         {
@@ -225,7 +225,7 @@ export default [
     definitionList: [ //  清晰度数据
       {
         name: '标清', // 渲染为清晰度切换播放栏选项
-        url: ''
+        url: 'http://222.213.16.54:20301/38ce689b37c82173cc3715d5234039a7.m3u8'
       },
       {
         name: '高清',
@@ -238,7 +238,7 @@ export default [
     ],
     cameraId: '1005',
     cameraName: '777777',
-    url: 'http://222.213.16.51:8050/M3u8File?01104849A400571E500_01104849A400571E500_1591760281_1591760326.m3u8',
+    url: '"http://222.213.16.54:20301/38ce689b37c82173cc3715d5234039a7.m3u8',
     danmu: {
       comments: [
         {
@@ -262,7 +262,7 @@ export default [
     definitionList: [ //  清晰度数据
       {
         name: '标清', // 渲染为清晰度切换播放栏选项
-        url: ''
+        url: 'http://222.213.16.54:20301/92eef9fb3520f9a32c4bfff2fd66b692.m3u8'
       },
       {
         name: '高清',
@@ -275,7 +275,7 @@ export default [
     ],
     cameraId: '1005',
     cameraName: '888888',
-    url: 'http://222.213.16.51:8050/M3u8File?01104849A400571E500_01104849A400571E500_1591283991_1591284036.m3u8',
+    url: 'http://222.213.16.54:20301/92eef9fb3520f9a32c4bfff2fd66b692.m3u8',
     danmu: {
       comments: [
         {
@@ -299,7 +299,7 @@ export default [
     definitionList: [ //  清晰度数据
       {
         name: '标清', // 渲染为清晰度切换播放栏选项
-        url: ''
+        url: 'http://222.213.16.54:20301/ce9281cc52d69d1e74880ee8131f5e06.m3u8'
       },
       {
         name: '高清',
@@ -312,7 +312,7 @@ export default [
     ],
     cameraId: '1005',
     cameraName: '9999999',
-    url: 'http://222.213.16.51:8050/M3u8File?01104849A400571E500_01104849A400571E500_1591280979_1591281029.m3u8',
+    url: 'http://222.213.16.54:20301/ce9281cc52d69d1e74880ee8131f5e06.m3u8',
     danmu: {
       comments: [
         {
@@ -336,7 +336,7 @@ export default [
     definitionList: [ //  清晰度数据
       {
         name: '标清', // 渲染为清晰度切换播放栏选项
-        url: ''
+        url: 'http://222.213.16.54:20301/a5e08f4fa3dfdbf9349adf1a216e4e1a.m3u8'
       },
       {
         name: '高清',
@@ -349,7 +349,7 @@ export default [
     ],
     cameraId: '1005',
     cameraName: 'tententen',
-    url: 'http://222.213.16.51:8050/M3u8File?01104849A400571E500_01104849A400571E500_1591280370_1591280432.m3u8',
+    url: '"http://222.213.16.54:20301/a5e08f4fa3dfdbf9349adf1a216e4e1a.m3u8',
     danmu: {
       comments: [
         {
