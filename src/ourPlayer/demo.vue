@@ -10,34 +10,45 @@
 
     <div class="right-play">
       <div class="grid-content">
-        <div>
+        <div style="padding-left: 10vw;">
           <i class="iconfont icon-fenpingfangshi2" title="一屏" @click="chooseSplitScreen(1)"></i>
           <i class="iconfont icon-fenpin2" title="四屏" @click="chooseSplitScreen(4)"></i>
           <i class="iconfont icon-fenpingfangshi" title="九屏" @click="chooseSplitScreen(9)"></i>
           <i class="iconfont icon-fenpingfangshi1" title="十六屏" @click="chooseSplitScreen(16)"></i>
         </div>
+        <div class="danmu-input">
+          <el-input placeholder="请输入弹幕" v-model="danmuText" size="small" style="width: 50vw;">
+            <el-button slot="append" icon="el-icon-edit" @click="ejectDanmu"></el-button>
+          </el-input>
+        </div>
       </div>
       <div class="play-content">
         <!--多个视频源测试-->
-        <inphase-player
+       <!-- <inphase-player
           :live="live"
           :split-screen="splitScreen"
           :video-list="videoList"
-          :pip="true"
+          :screen-shot="true"
+          :download="true"
+          :autoplay="true"
+          :cross-origin="true"
+          definition-active="hover"
           @repeat-video="onRepeatVideo"
           @play-error="onPlayError"
-        />
-
-        <!--单个视频源测试-->
-        <!--<inphase-player
-          :live="live"
-          :pip="true"
-          :video-url="url"
-          :definition-list="definitionList"
         />-->
 
+        <!--单个视频源测试-->
+        <inphase-player
+          :live="live"
+          :video-url="url"
+          :definition-list="definitionList"
+          :danmu="danmu"
+        />
+
       </div>
+
     </div>
+
   </div>
 
 </template>
@@ -55,7 +66,7 @@
     },
     data() {
       return {
-        url: 'http://222.213.16.54:20301/a5e08f4fa3dfdbf9349adf1a216e4e1a.m3u8',
+        url: require('./assets/video/叶问4.mp4'),
         live: false,
         splitScreen: 1,
         // 与播放器内部数据数组指向同一地址
@@ -66,7 +77,11 @@
         definitionList: [
            {name: '高清', url: ''},
            {name: '超清', url: ''}
-        ]
+        ],
+        // 弹幕数据
+        danmu: [],
+        // 弹幕内容
+        danmuText: ''
       }
     },
     created() {
@@ -89,9 +104,9 @@
        */
       chooseCamera(item) {
         // 多个视频源播放
-        this.videoList.push(item)
+        // this.videoList.push(item)
         // 单个视频源切换
-        // this.url = item.url
+        this.url = item.url
       },
       /**
        * @description 处理视频重复
@@ -108,6 +123,16 @@
        */
       onPlayError(currItem) {
         // console.log(currItem)
+      },
+      /**
+       * @description 发送弹幕
+       * @return {null}
+       */
+      ejectDanmu() {
+        // 弹幕发送快捷方式
+        this.danmu.push(this.danmuText)
+        // 弹幕详细配置
+
       }
     },
   }
@@ -144,6 +169,13 @@
       width: 85%;
       height: 100%;
 
+      .grid-content {
+        height: 40px;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
       .play-content {
         width: 100%;
         height: 100vh;

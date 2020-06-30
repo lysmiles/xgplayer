@@ -16,6 +16,7 @@ let closeVideo = function (player) {
   * 修改按钮位置样式
   * */
   closeWrappers.forEach(closeWrapper => {
+    if (!closeWrapper.style.zIndex) closeWrapper.style.zIndex = '999'
     // 设置过的dom无需设置，节约性能
     if (closeWrapper.style.position !== 'absolute') {
       closeWrapper.style.position = 'absolute'

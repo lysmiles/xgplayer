@@ -7,7 +7,16 @@
 
     -->
     <p style="display: none;">{{localVideoList.length}}</p>
-    <div class="video-fix" :style="videoStyles" v-for="item of splitScreenNum" :key="item" :id="item + 'videoID'"></div>
+    <div
+      class="video-fix"
+      :style="videoStyles"
+      v-for="item of splitScreenNum"
+      :key="item"
+      :id="item + 'videoID'"
+      @click="chooseVideo($event, item)"
+    >
+
+    </div>
   </div>
 </template>
 
@@ -25,14 +34,14 @@
     name: "inphasePlayer",
     props: {
       /**
-       * 是否为直播(默认支持)
+       * 是否为直播
        * */
       live: {
         type: Boolean,
         default: true
       },
       /**
-       * 是否支持截屏（默认支持）
+       * 是否开启截屏
        * */
       screenShot: {
         type: Boolean,
@@ -46,14 +55,14 @@
         default: ''
       },
       /**
-       * 是否支持下载 （默认支持）
+       * 是否开启下载
        * */
       download: {
         type: Boolean,
         default: true
       },
       /**
-       * 是否支持画中画 （默认支持）
+       * 是否开启画中画
        * */
       pip: {
         type: Boolean,
@@ -86,9 +95,42 @@
         default: ''
       },
       /**
+       * 是否开启自动播放 
+       */
+      autoplay: {
+        type: Boolean,
+        default: true
+      },
+      /**
+       * 是否开启跨域
+       */
+      crossOrigin: {
+        type: Boolean,
+        default: true
+      },
+      /**
        * 清晰度数据
        */
       definitionList: {
+        type: Array,
+        default() {
+          return []
+        }
+      },
+      /**
+       * 清晰度列表触发方式
+       */
+      definitionActive: {
+        validator: function (value) {
+          // 这个值必须匹配下列数字中的一个
+          return ['hover', 'click'].indexOf(value) !== -1
+        },
+        default: 'hover'
+      },
+      /**
+       * 弹幕数据
+       */
+      danmu: {
         type: Array,
         default() {
           return []
@@ -116,37 +158,31 @@
           width: 0, // 宽度
           height: 0, // 高度
           screenShot: true,// 是否开启截图
-          playsinline: true, // 该选项在手机观看时，是否开启ios和微信的内联模式
           autoplay: true, // 是否自动播放
           crossOrigin: true, // 是否跨域
           download: true, //是否下载视频
-          pip: true, // 是否开启画中画
+          pip: false, // 是否开启画中画
           definitionActive: 'hover', // 修改清晰度控件的触发方式
           poster: '', // 封面图
           danmu: {
-            comments: [  //弹幕数组
-              {
-                duration: 15000, //弹幕持续显示时间,毫秒(最低为5000毫秒)
-                id: '1', //弹幕id，需唯一
-                start: 3000, //弹幕出现时间，毫秒
-                prior: true, //该条弹幕优先显示，默认false
-                color: true, //该条弹幕为彩色弹幕，默认false
-                txt: '长弹幕长弹幕长弹幕长弹幕长弹幕长弹幕长弹幕长弹幕长弹幕长弹幕', //弹幕文字内容
-                style: {  //弹幕自定义样式
-                  color: '#ff9500',
-                  fontSize: '20px',
-                  border: 'solid 1px #ff9500',
-                  borderRadius: '50px',
-                  padding: '5px 11px',
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)'
-                },
-                mode: 'top' //显示模式，top顶部居中，bottom底部居中，scroll滚动，默认为scroll
-              }
-            ],
+            comments: [],  //弹幕数组
             area: {  //弹幕显示区域
               start: 0, //区域顶部到播放器顶部所占播放器高度的比例
               end: 1 //区域底部到播放器顶部所占播放器高度的比例
             },
+          },
+          danmuOptions: {
+            duration: 15000, //弹幕持续显示时间,毫秒(最低为5000毫秒)
+            id: '1', //弹幕id，需唯一
+            start: 3000, //弹幕出现时间，毫秒
+            prior: true, //该条弹幕优先显示，默认false
+            color: true, //该条弹幕为彩色弹幕，默认false
+            txt: '长弹幕长弹幕长弹幕长弹幕长弹幕长弹幕', //弹幕文字内容
+            style: {  //弹幕自定义样式
+              color: '#ff9500',
+              fontSize: '20px',
+            },
+            mode: 'scroll' //显示模式，top顶部居中，bottom底部居中，scroll滚动，默认为scroll
           }
         }
       }
@@ -174,6 +210,12 @@
       videoUrl(val) {
         if (this.videoList.length !== 0) throw new Error('video-list 与 video-url 不能混用')
         this.initVideo(val)
+      },
+      /**
+       * 处理弹幕
+       */
+      danmu(val) {
+
       }
     },
     mounted() {
@@ -284,6 +326,11 @@
         videoOptions.url = videoMsg.url
         videoOptions.poster = videoMsg.poster
         videoOptions.definitionList = videoMsg.definitionList
+        videoOptions.screenShot = this.screenShot
+        videoOptions.autoplay = this.autoplay
+        videoOptions.crossOrigin = this.videoOptions
+        videoOptions.download = this.download
+        videoOptions.definitionActive = this.definitionActive
         // 传入的清晰度列表
         this.createPlayers(videoOptions, length)
       },
@@ -298,6 +345,11 @@
         videoOptions.id = '1videoID'
         videoOptions.url = url
         videoOptions.poster = this.poster
+        videoOptions.screenShot = this.screenShot
+        videoOptions.autoplay = this.autoplay
+        videoOptions.crossOrigin = this.videoOptions
+        videoOptions.download = this.download
+        videoOptions.definitionActive = this.definitionActive
         this.createPlayer(videoOptions)
       },
       /**
@@ -367,6 +419,9 @@
           throw new Error('不能同时传入单个和多个视频源所需要的definitionList')
         }
       },
+      chooseVideo(e, videoNum) {
+        console.log(e)
+      }
     }
   }
 </script>
