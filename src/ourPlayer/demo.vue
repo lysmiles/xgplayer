@@ -132,6 +132,7 @@
         // 弹幕发送快捷方式
         this.danmu.push(this.danmuText)
         // 弹幕详细配置
+        this.danmuText = ''
 
       }
     },

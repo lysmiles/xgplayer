@@ -27,6 +27,7 @@
   import 'xgplayer'
   import 'xgplayer-mp4'
   import HlsJsPlayer from 'xgplayer-hls.js'
+  import FlvJsPlayer from 'xgplayer-flv.js';
   // 自定义样式
   // import '../assets/css/.xgplayer/skin/index.js'
 
@@ -95,7 +96,7 @@
         default: ''
       },
       /**
-       * 是否开启自动播放 
+       * 是否开启自动播放
        */
       autoplay: {
         type: Boolean,
@@ -165,7 +166,56 @@
           definitionActive: 'hover', // 修改清晰度控件的触发方式
           poster: '', // 封面图
           danmu: {
-            comments: [],  //弹幕数组
+            comments: [
+              {
+                duration: 15000, //弹幕持续显示时间,毫秒(最低为5000毫秒)
+                id: '1', //弹幕id，需唯一
+                start: 1000, //弹幕出现时间，毫秒
+                prior: false, //该条弹幕优先显示，默认false
+                color: true, //该条弹幕为彩色弹幕，默认false
+                txt: '我是一条孤独的弹幕~~~', //弹幕文字内容
+                style: {  //弹幕自定义样式
+                  color: '#ff9500',
+                  fontSize: '20px',
+                }
+              },{
+                duration: 15000, //弹幕持续显示时间,毫秒(最低为5000毫秒)
+                id: '2', //弹幕id，需唯一
+                start: 1000, //弹幕出现时间，毫秒
+                prior: false, //该条弹幕优先显示，默认false
+                color: true, //该条弹幕为彩色弹幕，默认false
+                txt: '我是一条孤独的弹幕~~~', //弹幕文字内容
+                style: {  //弹幕自定义样式
+                  color: '#ff9500',
+                  fontSize: '20px',
+                }
+              },
+              {
+                duration: 15000, //弹幕持续显示时间,毫秒(最低为5000毫秒)
+                id: '3', //弹幕id，需唯一
+                start: 1000, //弹幕出现时间，毫秒
+                prior: false, //该条弹幕优先显示，默认false
+                color: true, //该条弹幕为彩色弹幕，默认false
+                txt: '我是一条孤独的弹幕~~~', //弹幕文字内容
+                style: {  //弹幕自定义样式
+                  color: '#ff9500',
+                  fontSize: '20px',
+                }
+              },
+              {
+                duration: 15000, //弹幕持续显示时间,毫秒(最低为5000毫秒)
+                id: '4', //弹幕id，需唯一
+                start: 1000, //弹幕出现时间，毫秒
+                prior: false, //该条弹幕优先显示，默认false
+                color: true, //该条弹幕为彩色弹幕，默认false
+                txt: '我是一条孤独的弹幕~~~', //弹幕文字内容
+                style: {  //弹幕自定义样式
+                  color: '#ff9500',
+                  fontSize: '20px',
+                }
+              }
+
+            ],  //弹幕数组
             area: {  //弹幕显示区域
               start: 0, //区域顶部到播放器顶部所占播放器高度的比例
               end: 1 //区域底部到播放器顶部所占播放器高度的比例
@@ -174,10 +224,10 @@
           danmuOptions: {
             duration: 15000, //弹幕持续显示时间,毫秒(最低为5000毫秒)
             id: '1', //弹幕id，需唯一
-            start: 3000, //弹幕出现时间，毫秒
-            prior: true, //该条弹幕优先显示，默认false
+            start: 1000, //弹幕出现时间，毫秒
+            prior: false, //该条弹幕优先显示，默认false
             color: true, //该条弹幕为彩色弹幕，默认false
-            txt: '长弹幕长弹幕长弹幕长弹幕长弹幕长弹幕', //弹幕文字内容
+            txt: '我是一条孤独的弹幕~~~', //弹幕文字内容
             style: {  //弹幕自定义样式
               color: '#ff9500',
               fontSize: '20px',
@@ -215,6 +265,16 @@
        * 处理弹幕
        */
       danmu(val) {
+        let len = val.length - 1
+        if (!val[len]) throw new Error('传入的弹幕为空')
+        if (typeof val[len] === 'string') {
+          const danmuOptions = {...this.danmuOptions}
+          danmuOptions.id = `${Date.now()}`
+          danmuOptions.txt = val[len]
+          this.player.danmu.sendComment(danmuOptions)
+        } else {
+
+        }
 
       }
     },
@@ -407,8 +467,8 @@
            * 否则控制台报错。
            * 开启单个视频源则反之。
            * */
-        const singleDefinitionListLen = this.definitionList.length
-        const multiDefinitionListLen = options.definitionList.length
+        const singleDefinitionListLen = this.definitionList ? this.definitionList.length : 0
+        const multiDefinitionListLen = options.definitionList ? options.definitionList.length : 0
         if (!singleDefinitionListLen && multiDefinitionListLen) {
           // 多个视频源
           this.players[length - 1].emit('resourceReady', options.definitionList)
@@ -440,6 +500,7 @@
     }
 
   }
+
   /deep/ .xgplayer-skin-default .xgplayer-definition .name {
     right: 0;
   }
