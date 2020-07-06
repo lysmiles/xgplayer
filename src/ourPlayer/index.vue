@@ -13,9 +13,15 @@
       v-for="item of splitScreenNum"
       :key="item"
       :id="item + 'videoID'"
-      @click="chooseVideo($event, item)"
     >
-
+      <div class="logo-box"
+           :id="'logoBox' + item"
+           :style="{marginLeft: `-${logoWidth / 2}px`, marginTop: `-${logoWidth / 2}px`}">
+        <slot name="logo">
+          <!--默认logo-->
+          <img :src="logo" alt="logo">
+        </slot>
+      </div>
     </div>
   </div>
 </template>
@@ -30,7 +36,6 @@
   import FlvJsPlayer from 'xgplayer-flv.js';
   // 自定义样式
   // import '../assets/css/.xgplayer/skin/index.js'
-
   export default {
     name: "inphasePlayer",
     props: {
@@ -73,6 +78,7 @@
        *  分屏数
        * */
       splitScreen: {
+        type: Number,
         validator: function (value) {
           // 这个值必须匹配下列数字中的一个
           return [1, 4, 9, 16].indexOf(value) !== -1
@@ -122,6 +128,7 @@
        * 清晰度列表触发方式
        */
       definitionActive: {
+        type: String,
         validator: function (value) {
           // 这个值必须匹配下列数字中的一个
           return ['hover', 'click'].indexOf(value) !== -1
@@ -136,16 +143,34 @@
         default() {
           return []
         }
+      },
+      /**
+       * 默认倍速
+       */
+      defaultPlaybackRate: {
+        type: Number,
+        validator: function (value) {
+          // 这个值必须匹配下列数字中的一个
+          return [0.5, 0.75, 1, 1.5, 2].indexOf(value) !== -1
+        },
+        default: 1
       }
     },
     data() {
       return {
+        // logo宽度
+        logoWidth: 0,
+        // 默认logo
+        logo: require('./assets/img/logo.png'),
         // 单个播放器对象
         player: null,
         // 播放器实例对象数组
         players: [],
+        // 容器宽度
         clientWidth: '',
+        // 容器高度
         clientHeight: '',
+        // 容器尺寸样式
         videoStyles: '',
         videoStyleOptions: {
           1: 'width:100% !important;height:100% !important',
@@ -158,6 +183,7 @@
           url: '', // 视频源
           width: 0, // 宽度
           height: 0, // 高度
+          isLive: true, // flv格式视频流是否开启直播
           screenShot: true,// 是否开启截图
           autoplay: true, // 是否自动播放
           crossOrigin: true, // 是否跨域
@@ -165,7 +191,9 @@
           pip: false, // 是否开启画中画
           definitionActive: 'hover', // 修改清晰度控件的触发方式
           poster: '', // 封面图
-          danmu: {
+          playbackRate: [0.5, 0.75, 1, 1.5, 2], // 倍速播放
+          defaultPlaybackRate: 1.5, // 默认倍速
+          /*danmu: {
             comments: [
               {
                 duration: 15000, //弹幕持续显示时间,毫秒(最低为5000毫秒)
@@ -220,20 +248,20 @@
               start: 0, //区域顶部到播放器顶部所占播放器高度的比例
               end: 1 //区域底部到播放器顶部所占播放器高度的比例
             },
+          },*/
+        },
+        danmuOptions: {
+          duration: 15000, //弹幕持续显示时间,毫秒(最低为5000毫秒)
+          id: '1', //弹幕id，需唯一
+          start: 1000, //弹幕出现时间，毫秒
+          prior: false, //该条弹幕优先显示，默认false
+          color: true, //该条弹幕为彩色弹幕，默认false
+          txt: '我是一条孤独的弹幕~~~', //弹幕文字内容
+          style: {  //弹幕自定义样式
+            color: '#ff9500',
+            fontSize: '20px',
           },
-          danmuOptions: {
-            duration: 15000, //弹幕持续显示时间,毫秒(最低为5000毫秒)
-            id: '1', //弹幕id，需唯一
-            start: 1000, //弹幕出现时间，毫秒
-            prior: false, //该条弹幕优先显示，默认false
-            color: true, //该条弹幕为彩色弹幕，默认false
-            txt: '我是一条孤独的弹幕~~~', //弹幕文字内容
-            style: {  //弹幕自定义样式
-              color: '#ff9500',
-              fontSize: '20px',
-            },
-            mode: 'scroll' //显示模式，top顶部居中，bottom底部居中，scroll滚动，默认为scroll
-          }
+          mode: 'scroll' //显示模式，top顶部居中，bottom底部居中，scroll滚动，默认为scroll
         }
       }
     },
@@ -259,12 +287,14 @@
        */
       videoUrl(val) {
         if (this.videoList.length !== 0) throw new Error('video-list 与 video-url 不能混用')
+        // 更新后的值为空时，直接跳出循环
+        if (!val) return
         this.initVideo(val)
       },
       /**
        * 处理弹幕
        */
-      danmu(val) {
+      /*danmu(val) {
         let len = val.length - 1
         if (!val[len]) throw new Error('传入的弹幕为空')
         if (typeof val[len] === 'string') {
@@ -273,15 +303,12 @@
           danmuOptions.txt = val[len]
           this.player.danmu.sendComment(danmuOptions)
         } else {
-
         }
-
-      }
+      }*/
     },
     mounted() {
       // 初始化视频样式
       this.setScreenStyle()
-
       // 初始化时，外部url不为空，则直接播放
       if (this.videoUrl) this.initVideo(this.videoUrl)
     },
@@ -359,9 +386,14 @@
        * @return {null}
        */
       setVideoView() {
-        const videoDom = document.getElementById('1videoID')
-        this.clientWidth = videoDom.clientWidth
-        this.clientHeight = videoDom.clientHeight
+          const videoDom = document.getElementById('1videoID')
+          const logoBoxDom = document.getElementById('logoBox1')
+          // 初始化时取首张图片的宽度
+          // 播放首个视频后，首张图片会被隐藏，宽度为0
+          // 如果logoWidth已经初始化，则不再修改其宽度
+          if (!this.logoWidth) this.logoWidth = logoBoxDom.clientWidth
+          this.clientWidth = videoDom.clientWidth
+          this.clientHeight = videoDom.clientHeight
       },
       /**
        * @description 设置分屏样式
@@ -369,9 +401,7 @@
        */
       setScreenStyle() {
         this.setVideoView()
-        this.$nextTick(() => {
-          this.videoStyles = this.videoStyleOptions[`${this.splitScreenNum}`]
-        })
+        this.videoStyles = this.videoStyleOptions[`${this.splitScreenNum}`]
       },
       /**
        * @description 初始化多个视频源
@@ -391,7 +421,7 @@
         videoOptions.crossOrigin = this.videoOptions
         videoOptions.download = this.download
         videoOptions.definitionActive = this.definitionActive
-        // 传入的清晰度列表
+        videoOptions.defaultPlaybackRate = this.defaultPlaybackRate
         this.createPlayers(videoOptions, length)
       },
       /**
@@ -410,6 +440,7 @@
         videoOptions.crossOrigin = this.videoOptions
         videoOptions.download = this.download
         videoOptions.definitionActive = this.definitionActive
+        videoOptions.defaultPlaybackRate = this.defaultPlaybackRate
         this.createPlayer(videoOptions)
       },
       /**
@@ -419,16 +450,21 @@
        * @return {null}
        */
       createPlayers(options, length) {
+        const logoBoxDom = document.getElementById(`logoBox${length}`)
         this.$nextTick(() => {
-          const currPlayer = this.players[length - 1]
-          if (currPlayer) {
-            currPlayer.src = options.url
+          if (this.players[length - 1]) {
+            this.players[length - 1].src = options.url
           } else {
             this.players[length - 1] = this.live ? new HlsJsPlayer(options) : new Player(options)
           }
+          const currPlayer = this.players[length - 1]
+
           // 视频加载失败时触发
-          this.players[length - 1].once('error', () => {
+          currPlayer.once('error', () => {
             this.$emit('play-error', options, this.players[length - 1].error)
+          })
+          currPlayer.once('play', () => {
+            logoBoxDom.style.display = 'none'
           })
           this.emitDefinition(options, length)
         })
@@ -439,6 +475,7 @@
        * @return {null}
        */
       createPlayer(options) {
+        const logoBoxDom = document.getElementById(`logoBox1`)
         this.$nextTick(() => {
           if (this.player) {
             this.player.src = options.url
@@ -448,6 +485,9 @@
           // 视频加载失败时触发
           this.player.once('error', () => {
             this.$emit('play-error', options, this.player.error)
+          })
+          this.player.once('play', () => {
+            logoBoxDom.style.display = 'none'
           })
           this.emitDefinition(options, 1)
         })
@@ -479,14 +519,11 @@
           throw new Error('不能同时传入单个和多个视频源所需要的definitionList')
         }
       },
-      chooseVideo(e, videoNum) {
-        console.log(e)
-      }
     }
   }
 </script>
 
-<style lang="less" scoped>
+<style scoped>
   .video-content {
     width: 100%;
     height: calc(100% - 40px);
@@ -494,15 +531,21 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: space-around;
+  }
 
-    .video-fix {
-      background-color: #000;
-    }
-
+  .video-fix {
+    position: relative;
+    background-color: #000;
   }
 
   /deep/ .xgplayer-skin-default .xgplayer-definition .name {
     right: 0;
+  }
+
+  .logo-box {
+    position: absolute;
+    left: 50%;
+    top: 50%;
   }
 
 </style>

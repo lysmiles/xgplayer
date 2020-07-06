@@ -15,7 +15,7 @@ npm i xgplayer-mp4
 ```
 npm i node-sass sass-loader raw-loader
 ```
-将整个文件夹放入组件目录`components`下，使用该组件
+将整个`ourPlayer`文件夹放入组件目录`components`下，使用该组件
 ```js
 import InphasePlayer from '../components/ourPlayer'
 ```
@@ -97,7 +97,7 @@ import InphasePlayer from '../components/ourPlayer'
 - 描述：开启直播，支持`hls`类型的视频流，如`m3u8`。关闭直播，支持`mp4`类型视频。
 
 ### 截屏
-- 配置项：`screenShot`
+- 配置项：`screen-shot`
 - 类型: Boolean
 - 默认值：true
 - 参考值：true | false
@@ -125,20 +125,27 @@ import InphasePlayer from '../components/ourPlayer'
 - 描述：是否开启自动播放功能。
 
 ### 跨域
-- 配置项：`crossOrigin`
+- 配置项：`cross-origin`
 - 类型：Boolean
 - 默认值：true
 - 参考值：true | false
 - 描述：是否跨域。
 
 ### 清晰度触发方式
-- 配置项：`definitionActive`
+- 配置项：`definition-active`
 - 类型：String
 - 默认值：'hover'
 - 参考值：'hover' | 'click'
 - 描述：通过不同的触发方式来显示清晰度切换列表。
 
-### 弹幕
+### 默认倍速
+- 配置项：`default-playback-rate`
+- 类型：Number
+- 默认值：1
+- 参考值：0.5 | 0.75 | 1 | 1.5 | 2
+- 描述：设置默认倍速。
+
+### 弹幕(暂未支持)
 - 配置项：`danmu`
 - 类型：Array< Object > | Array< String >
 - 默认值：[]
@@ -173,6 +180,19 @@ import InphasePlayer from '../components/ourPlayer'
 - 描述：仅使用于单个视频源添加弹幕内容。使用第①种方式，数组元素为对象，可以对弹幕进行详细配置。
   使用第②种方式，数组元素为字符串，可以快捷得添加默认配置的弹幕。
 
+## 插槽
+### 默认logo
+- 描述：通过`#logo`或`v-slot:logo`具名插槽插入logo图片，
+  可自定义大小，会自动垂直水平居中，在视频开始播放之后消失。
+- 使用方法：
+```
+<inphase-player>
+   <template #logo>
+       <img :src="logo" alt="logo" width="80px" height="80px">
+   </template>
+</inphase-player>
+```
+
 ## 事件
 ### 监听视频重复
 - 配置项：`repeat-video`
@@ -198,9 +218,6 @@ import InphasePlayer from '../components/ourPlayer'
 2. 清除视频之后，再新增视频将会从头到尾依次增加，中间有未清除的视频会自动跳过
 
 ### 清晰度
-1. 传入清晰度数组时，至少有一个清晰度的`url`要和视频源`url`严格相等，
+1. 传入清晰度数组时，至少要有一个清晰度的`url`要和视频源`url`严格相等，
    否则会导致清晰度等级字样`标清`,`高清`,`超清`等，无法在控制栏显示
 
-### 到1屏
-1. 多屏时，点击`到1屏`按钮，该视频替换**1屏**播放源
-2. 替换后自动按照上次播放进度开始播放

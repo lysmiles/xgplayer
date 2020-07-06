@@ -1,15 +1,13 @@
 const path = require('path')
 function resolve(videoName) {
-  let tmpName = videoName + '.mp4'
-  // return path.resolve( '../video/', tmpName)
-  return require(`../video/${tmpName}`)
+  return require(`../video/${videoName}.mp4`)
 }
 export default [
   {
     definitionList: [ //  清晰度数据
       {
         name: '标清', // 渲染为清晰度切换播放栏选项
-        url: 'http://vfx.mtime.cn/Video/2019/02/04/mp4/190204084208765161.mp4'
+        url: resolve('qilewuqiong')
       },
       {
         name: '高清',
@@ -23,6 +21,7 @@ export default [
     cameraId: '1001',
     cameraName: '其乐无穷',
     url: resolve('qilewuqiong'),
+    poster: require('../img/截图 (1).png'),
     danmu: {
       comments: [
         {

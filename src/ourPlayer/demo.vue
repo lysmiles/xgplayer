@@ -24,7 +24,7 @@
       </div>
       <div class="play-content">
         <!--多个视频源测试-->
-       <!-- <inphase-player
+        <inphase-player
           :live="live"
           :split-screen="splitScreen"
           :video-list="videoList"
@@ -33,24 +33,30 @@
           :autoplay="true"
           :cross-origin="true"
           definition-active="hover"
+          :default-playback-rate="1"
           @repeat-video="onRepeatVideo"
           @play-error="onPlayError"
-        />-->
+        >
+          <template #logo>
+            <img :src="logo" alt="logo" width="80px" height="80px">
+          </template>
+        </inphase-player>
 
         <!--单个视频源测试-->
-        <inphase-player
+       <!-- <inphase-player
           :live="live"
           :video-url="url"
           :definition-list="definitionList"
-          :danmu="danmu"
-        />
+          :poster="poster"
+        >
+          <template #logo>
+            <img :src="logo" alt="logo" width="80px" height="80px">
+          </template>
+        </inphase-player>-->
 
       </div>
-
     </div>
-
   </div>
-
 </template>
 
 <script>
@@ -66,7 +72,8 @@
     },
     data() {
       return {
-        url: require('./assets/video/叶问4.mp4'),
+        logo: require('./assets/img/logo.png'),
+        url: '',
         live: false,
         splitScreen: 1,
         // 与播放器内部数据数组指向同一地址
@@ -81,7 +88,9 @@
         // 弹幕数据
         danmu: [],
         // 弹幕内容
-        danmuText: ''
+        danmuText: '',
+        // 封面图
+        poster: require('./assets/img/截图 (1).png')
       }
     },
     created() {
@@ -104,9 +113,10 @@
        */
       chooseCamera(item) {
         // 多个视频源播放
-        // this.videoList.push(item)
-        // 单个视频源切换
-        this.url = item.url
+        this.videoList.push(item)
+        // 单个视频源切换,需要同时切换清晰度列表
+        /*this.url = item.url
+        this.definitionList = item.definitionList*/
       },
       /**
        * @description 处理视频重复
@@ -129,10 +139,10 @@
        * @return {null}
        */
       ejectDanmu() {
-        // 弹幕发送快捷方式
+        /*// 弹幕发送快捷方式
         this.danmu.push(this.danmuText)
         // 弹幕详细配置
-        this.danmuText = ''
+        this.danmuText = ''*/
 
       }
     },
