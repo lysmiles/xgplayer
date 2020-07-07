@@ -28,12 +28,12 @@
 
 <script>
   import Player from 'xgplayer'
-  // 执行关闭按钮插件
-  import './plugins/closeVideo'
   import 'xgplayer'
   import 'xgplayer-mp4'
   import HlsJsPlayer from 'xgplayer-hls.js'
-  import FlvJsPlayer from 'xgplayer-flv.js';
+  import FlvJsPlayer from 'xgplayer-flv.js'
+  // 执行关闭按钮插件
+  import './plugins/closeVideo'
   // 自定义样式
   // import '../assets/css/.xgplayer/skin/index.js'
   export default {
@@ -158,6 +158,8 @@
     },
     data() {
       return {
+        // 视频源后缀名正则
+        videoSuffixReg: /(\.mp4|\.m3u8|\.flv)$/i,
         // logo宽度
         logoWidth: 0,
         // 默认logo
@@ -184,6 +186,7 @@
           width: 0, // 宽度
           height: 0, // 高度
           isLive: true, // flv格式视频流是否开启直播
+          playsinline: true, // 开启ios和微信的内联模式
           screenShot: true,// 是否开启截图
           autoplay: true, // 是否自动播放
           crossOrigin: true, // 是否跨域
@@ -283,16 +286,18 @@
         this.setScreenStyle()
       },
       /**
-       * 处理传入的单个视频源
+       * 监听传入的单个视频源
        */
       videoUrl(val) {
         if (this.videoList.length !== 0) throw new Error('video-list 与 video-url 不能混用')
         // 更新后的值为空时，直接跳出循环
         if (!val) return
+        // 判断视频源是否符合支持的格式
+        if(!this.suffixParser(val)) throw new Error('仅支持mp4, m3u8, flv格式视频或直播流')
         this.initVideo(val)
       },
       /**
-       * 处理弹幕
+       * 监听弹幕
        */
       /*danmu(val) {
         let len = val.length - 1
@@ -309,15 +314,20 @@
     mounted() {
       // 初始化视频样式
       this.setScreenStyle()
-      // 初始化时，外部url不为空，则直接播放
-      if (this.videoUrl) this.initVideo(this.videoUrl)
+      if (!this.videoUrl) return
+      // 初始化时，外部url符合支持格式，则直接播放
+      if (this.suffixParser(this.videoUrl)) {
+        this.initVideo(this.videoUrl)
+      } else {
+        throw new Error('仅支持mp4, m3u8, flv格式视频或直播流')
+      }
     },
     computed: {
       /**
        * 处理不合理的分屏数
        */
       splitScreenNum() {
-        if (this.splitScreen === 1 || this.splitScreen === 4 || this.splitScreen === 9 || this.splitScreen === 16) {
+        if ([1, 4, 9, 16].indexOf(this.splitScreen) > -1) {
           return this.splitScreen
         } else {
           return 1
@@ -328,6 +338,7 @@
        */
       localVideoList() {
         let len = this.videoList.length
+
         // 处理视频源混用，两者同时存在，抛出错误
         if (len !== 0 && this.videoUrl !== '') {
           throw new Error('video-list 与 video-url 不能混用')
@@ -336,6 +347,10 @@
         if (len === 0) {
           return []
         }
+        let lastVideoUrl = this.videoList[len - 1].url
+
+        // 判断视频源是否符合支持的格式
+        if (!this.suffixParser(lastVideoUrl)) throw new Error('仅支持mp4, m3u8, flv格式视频或直播流')
         // 通过关闭按钮插件关闭后，默认视频源为当前网站origin
         const origin = window.location.origin + '/'
         // 找出第一个无视频源播放器实例
@@ -351,7 +366,6 @@
         }
 
         // 新加入的视频url，如果是重复的，则不加入
-        let lastVideoUrl = this.videoList[len - 1].url
         let flagIndex = this.videoList.findIndex(item => item.url === lastVideoUrl)
 
         // 如果找到的坐标就是新加入视频的坐标，则没有重复
@@ -382,6 +396,31 @@
     },
     methods: {
       /**
+       * @description 根据不同的视频源格式创建不同的player实例
+       * @param suffix {String} -  视频源后缀名
+       * @param options {Object} -  配置对象
+       * @return {Object} - player实例
+       */
+      distinguishPlayerType(suffix, options) {
+        if (suffix === '.mp4') {
+          return new Player(options)
+        } else if (suffix === '.m3u8') {
+          return new HlsJsPlayer(options)
+        } else if (suffix === '.flv') {
+          return new FlvJsPlayer(options)
+        }
+      },
+      /**
+       * @description 解析视频类型
+       * @param url {String} - 视频源
+       * @return {String} - 对应的后缀名或空字符串
+       */
+      suffixParser(url) {
+        const result = this.videoSuffixReg.exec(url)
+        // 统一处理为小写
+        return  result ? result[0].toLowerCase() : ''
+      },
+      /**
        * @description 设置视频配置参数宽高
        * @return {null}
        */
@@ -411,7 +450,8 @@
        */
       initVideos(videoMsg, length) {
         const videoOptions = {...this.videoOptions}
-        // 不同的配置需要单独修改
+        // flv格式视频需要开启直播选项
+        if (this.suffixParser(videoMsg.url) === '.flv') videoOptions.isLive = this.live
         videoOptions.id = length + 'videoID'
         videoOptions.url = videoMsg.url
         videoOptions.poster = videoMsg.poster
@@ -422,6 +462,7 @@
         videoOptions.download = this.download
         videoOptions.definitionActive = this.definitionActive
         videoOptions.defaultPlaybackRate = this.defaultPlaybackRate
+
         this.createPlayers(videoOptions, length)
       },
       /**
@@ -431,7 +472,8 @@
        */
       initVideo(url) {
         const videoOptions = {...this.videoOptions}
-        // 不同的配置需要单独修改
+        // flv格式视频需要开启直播选项
+        if (this.suffixParser(url) === '.flv') videoOptions.isLive = this.live
         videoOptions.id = '1videoID'
         videoOptions.url = url
         videoOptions.poster = this.poster
@@ -452,10 +494,11 @@
       createPlayers(options, length) {
         const logoBoxDom = document.getElementById(`logoBox${length}`)
         this.$nextTick(() => {
+          // 当前player实例已存在，则重新拉流
           if (this.players[length - 1]) {
             this.players[length - 1].src = options.url
           } else {
-            this.players[length - 1] = this.live ? new HlsJsPlayer(options) : new Player(options)
+            this.players[length - 1] = this.distinguishPlayerType(this.suffixParser(options.url), options)
           }
           const currPlayer = this.players[length - 1]
 
@@ -477,10 +520,11 @@
       createPlayer(options) {
         const logoBoxDom = document.getElementById(`logoBox1`)
         this.$nextTick(() => {
+          // 当前player实例已存在，则重新拉流
           if (this.player) {
             this.player.src = options.url
           } else {
-            this.player = this.live ? new HlsJsPlayer(options) : new Player(options)
+            this.player = this.distinguishPlayerType(this.suffixParser(options.url), options)
           }
           // 视频加载失败时触发
           this.player.once('error', () => {

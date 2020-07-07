@@ -3,13 +3,17 @@
 ```
  npm i xgplayer
 ```
-安装Hls插件
+安装hls插件
 ```
  npm i xgplayer-hls.js
 ```
-安装Mp4插件
+安装mp4插件
 ```
 npm i xgplayer-mp4
+```
+安装flv插件
+```
+npm i xgplayer-flv.js
 ```
 如果需要自定义样式，安装以下`loader`（自定义样式功能暂未开放）
 ```
@@ -62,7 +66,7 @@ import InphasePlayer from '../components/ourPlayer'
     }
 ]
 ```
-- 描述：多个视频源。支持分屏功能。对象可以包含多个别的键值对，但`url`键不可改变。
+- 描述：多个视频源。支持分屏功能。
         该参数不能与`video-url`混用，否则可能会有意料之外的错误。
         
 ### 清晰度
@@ -94,7 +98,7 @@ import InphasePlayer from '../components/ourPlayer'
 - 类型: Boolean
 - 默认值：true
 - 参考值：true | false
-- 描述：开启直播，支持`hls`类型的视频流，如`m3u8`。关闭直播，支持`mp4`类型视频。
+- 描述：开启直播，支持直播视频流。
 
 ### 截屏
 - 配置项：`screen-shot`
@@ -177,7 +181,7 @@ import InphasePlayer from '../components/ourPlayer'
   '长弹幕长弹幕长弹幕长弹幕长弹幕长弹幕'
 ]
 ```
-- 描述：仅使用于单个视频源添加弹幕内容。使用第①种方式，数组元素为对象，可以对弹幕进行详细配置。
+- 描述：仅适用于单个视频源添加弹幕内容。使用第①种方式，数组元素为对象，可以对弹幕进行详细配置。
   使用第②种方式，数组元素为字符串，可以快捷得添加默认配置的弹幕。
 
 ## 插槽
