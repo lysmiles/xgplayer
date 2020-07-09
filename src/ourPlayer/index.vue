@@ -34,6 +34,7 @@
   import FlvJsPlayer from 'xgplayer-flv.js'
   // 执行关闭按钮插件
   import './plugins/closeVideo'
+  import './plugins/error'
   // 自定义样式
   // import '../assets/css/.xgplayer/skin/index.js'
   export default {
@@ -154,6 +155,13 @@
           return [0.5, 0.75, 1, 1.5, 2].indexOf(value) !== -1
         },
         default: 1
+      },
+      /**
+       * 同一个页面是否只允许一个视频播放
+       */
+      onlyOnePlay: {
+        type: Boolean,
+        default: false
       }
     },
     data() {
@@ -175,10 +183,10 @@
         // 容器尺寸样式
         videoStyles: '',
         videoStyleOptions: {
-          1: 'width:100% !important;height:100% !important',
+          1: 'width:100% !important;height:100% !important;',
           4: 'width:49% !important;height:49% !important;',
-          9: 'width:33%;height:33%;',
-          16: 'width:24%;height:24%;',
+          9: 'width:33% !important;height:33% !important;',
+          16: 'width:24% !important;height:24% !important;',
         },
         videoOptions: {
           id: '', // 播放器容器DOM的ID
@@ -196,6 +204,7 @@
           poster: '', // 封面图
           playbackRate: [0.5, 0.75, 1, 1.5, 2], // 倍速播放
           defaultPlaybackRate: 1.5, // 默认倍速
+          ignores: ['error'], // 忽略内部插件
           /*danmu: {
             comments: [
               {
@@ -412,6 +421,15 @@
     },
     methods: {
       /**
+       * @description 设置播放器静音
+       * @return {null}
+       */
+      setVolume() {
+        if (this.player.hasStart) {
+          this.player.volume = 0
+        }
+      },
+      /**
        * @description 生成从最小范围至最大范围的随机数，不包括最大范围
        * @param min {Number} - 最小范围
        * @param max {Number} - 最大范围
@@ -447,11 +465,21 @@
         // 视频播放时触发
         player.on('play', () => {
           logoBoxDom.style.display = 'none'
+          // 移动端同一页面是否只能播放一个视频
+          if (this.onlyOnePlay) {
+            this.$parent.$children.forEach(item => {
+              // 关闭别的已播放视频
+              if (item._uid !== this._uid) {
+                item.setVolume()
+              }
+            })
+          }
         })
         // 实例销毁后注销事件
         player.once('destroy', () => {
           this.onPlayerDestroy(player)
         })
+
       },
       /**
        * @description 注销播放器实例事件

@@ -5,13 +5,12 @@
         v-for="video in videoData"
         :video-url="video.url"
         :autoplay="false"
+        :only-one-play="true"
+        :key="video.cameraName"
       >
-
       </inphase-player>
     </div>
-
   </div>
-
 </template>
 
 <script>

@@ -92,7 +92,13 @@ import InphasePlayer from '../components/ourPlayer'
 ```
 - 描述：仅在通过`video-url`传入单个视频源时使用，切换`video-url`时，需要同时切换该选项，保持视频源与该视频源清晰度资源同步。
         多个视频源需要通过新增对象属性`definitionList`来使用。
-
+        
+### 清晰度触发方式
+- 配置项：`definition-active`
+- 类型：String
+- 默认值：'hover'
+- 参考值：'hover' | 'click'
+- 描述：通过不同的触发方式来显示清晰度切换列表。
 ### 直播
 - 配置项：`live`
 - 类型: Boolean
@@ -135,12 +141,13 @@ import InphasePlayer from '../components/ourPlayer'
 - 参考值：true | false
 - 描述：是否跨域。
 
-### 清晰度触发方式
-- 配置项：`definition-active`
-- 类型：String
-- 默认值：'hover'
-- 参考值：'hover' | 'click'
-- 描述：通过不同的触发方式来显示清晰度切换列表。
+### 唯一视频播放
+- 配置项：`only-one-play`
+- 类型：Boolean
+- 默认值：false
+- 参考值：true | false
+- 描述：在同一个页面是否只允许播放一个视频。仅支持通过`video-url`传入的视频源。
+
 
 ### 默认倍速
 - 配置项：`default-playback-rate`
@@ -228,5 +235,9 @@ import InphasePlayer from '../components/ourPlayer'
 ### 切换视频
 1. 在同一块屏幕上，如果已经播放过一个特定格式的视频源，
    那么切换时不能切换到另一种格式的视频源，必须为同一种格式。
-2. 如果一块屏幕从未播放过或者通过上述**_分屏_**板块第3项操作销毁，
+2. 如果一块屏幕从未播放过或者通过上述_**分屏**_板块第3项操作销毁，
     那么则支持切换不同格式的视频。
+
+### 唯一视频播放(暂时只支持关闭音频)
+1. 当一个页面有多个该组件播放视频，播放其中一个，另外的视频会自动暂停，避免干扰当前播放的视频。
+2. 通过组件自带分屏功能实现的多个视频播放不支持该属性。
