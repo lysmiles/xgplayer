@@ -421,12 +421,12 @@
     },
     methods: {
       /**
-       * @description 设置播放器静音
+       * @description 暂停同时满足正在播放与未暂停两个条件的播放器
        * @return {null}
        */
-      setVolume() {
-        if (this.player.hasStart) {
-          this.player.volume = 0
+      videoPause() {
+        if (this.player.hasStart && !this.player.paused) {
+          this.player.pause()
         }
       },
       /**
@@ -463,17 +463,20 @@
           this.$emit('play-error', player.error)
         })
         // 视频播放时触发
-        player.on('play', () => {
+        // 监听play事件会导致已经播放的视频暂停，但后续视频无法播放
+        player.on('playing', () => {
           logoBoxDom.style.display = 'none'
           // 移动端同一页面是否只能播放一个视频
           if (this.onlyOnePlay) {
             this.$parent.$children.forEach(item => {
-              // 关闭别的已播放视频
+              // 暂停当前播放视频之外的视频
               if (item._uid !== this._uid) {
-                item.setVolume()
+                // item.setVolume()
+                item.videoPause()
               }
             })
           }
+          // player.start(player.src)
         })
         // 实例销毁后注销事件
         player.once('destroy', () => {
