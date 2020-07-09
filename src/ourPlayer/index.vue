@@ -12,10 +12,10 @@
       :style="videoStyles"
       v-for="item of splitScreenNum"
       :key="item"
-      :id="item + 'videoID'"
+      :id="`${item}videoID-${hashStr}`"
     >
       <div class="logo-box"
-           :id="'logoBox' + item"
+           :id="`logoBox${item}-${hashStr}`"
            :style="{marginLeft: `-${logoWidth / 2}px`, marginTop: `-${logoWidth / 2}px`}">
         <slot name="logo">
           <!--默认logo-->
@@ -44,7 +44,7 @@
        * */
       live: {
         type: Boolean,
-        default: true
+        default: false
       },
       /**
        * 是否开启截屏
@@ -293,7 +293,7 @@
         // 更新后的值为空时，直接跳出循环
         if (!val) return
         // 判断视频源是否符合支持的格式
-        if(!this.suffixParser(val)) throw new Error('仅支持mp4, m3u8, flv格式视频或直播流')
+        if (!this.suffixParser(val)) throw new Error('仅支持mp4, m3u8, flv格式视频或直播流')
         this.initVideo(val)
       },
       /**
@@ -324,6 +324,19 @@
     },
     computed: {
       /**
+       * 生成hash值
+       */
+      hashStr() {
+        let hash = 8
+        const dictionary = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+        const len = dictionary.length
+        let randomStr = ''
+        for (let i = 0; i < hash; i++) {
+          randomStr += dictionary[this.createRandomNum(0, len)]
+        }
+        return randomStr
+      },
+      /**
        * 处理不合理的分屏数
        */
       splitScreenNum() {
@@ -353,15 +366,18 @@
         if (!this.suffixParser(lastVideoUrl)) throw new Error('仅支持mp4, m3u8, flv格式视频或直播流')
         // 通过关闭按钮插件关闭后，默认视频源为当前网站origin
         const origin = window.location.origin + '/'
-        // 找出第一个无视频源播放器实例
-        const firstClosedPlayer = this.players.find((player) => {
+        // 找出第一个无视频源播放器实例索引
+        const firstClosedPlayerIndex = this.players.findIndex((player) => {
           return player.src === origin
         })
+        const firstClosedPlayer = this.players[firstClosedPlayerIndex]
         // 找到之后播放同时切换清晰度视频源
-        if (firstClosedPlayer) {
+        if (firstClosedPlayerIndex > -1) {
           const pop = this.videoList.pop()
           firstClosedPlayer.src = pop.url
+          firstClosedPlayer.config.url = pop.url
           firstClosedPlayer.emit('resourceReady', pop.definitionList)
+          this.videoList.splice(firstClosedPlayerIndex, 1, pop)
           return []
         }
 
@@ -396,6 +412,58 @@
     },
     methods: {
       /**
+       * @description 生成从最小范围至最大范围的随机数，不包括最大范围
+       * @param min {Number} - 最小范围
+       * @param max {Number} - 最大范围
+       * @return {Number} - 随机数
+       */
+      createRandomNum(min, max) {
+        return Math.floor(Math.random() * (max - min)) + min
+      },
+      /**
+       * @description 处理相同的配置
+       * @param videoOptions {Object} - 配置对象
+       * @return {null}
+       */
+      handleSamePlayerOptions(videoOptions) {
+        videoOptions.screenShot = this.screenShot
+        videoOptions.autoplay = this.autoplay
+        videoOptions.crossOrigin = this.videoOptions
+        videoOptions.download = this.download
+        videoOptions.definitionActive = this.definitionActive
+        videoOptions.defaultPlaybackRate = this.defaultPlaybackRate
+      },
+      /**
+       * @description 处理播放器注册事件
+       * @param player {Object} -  播放器实例
+       * @param logoBoxDom {Object} -  默认logo Dom对象
+       * @return {null}
+       */
+      handlePlayerEvents(player, logoBoxDom) {
+        // 视频加载失败时触发
+        player.on('error', () => {
+          this.$emit('play-error', player.error)
+        })
+        // 视频播放时触发
+        player.on('play', () => {
+          logoBoxDom.style.display = 'none'
+        })
+        // 实例销毁后注销事件
+        player.once('destroy', () => {
+          this.onPlayerDestroy(player)
+        })
+      },
+      /**
+       * @description 注销播放器实例事件
+       * @param player {Object} - 播放器实例
+       * @return {null}
+       */
+      onPlayerDestroy(player) {
+        player.off('error', () => {})
+        player.off('play', () => {})
+        player.off('destroy', () => {})
+      },
+      /**
        * @description 根据不同的视频源格式创建不同的player实例
        * @param suffix {String} -  视频源后缀名
        * @param options {Object} -  配置对象
@@ -418,21 +486,21 @@
       suffixParser(url) {
         const result = this.videoSuffixReg.exec(url)
         // 统一处理为小写
-        return  result ? result[0].toLowerCase() : ''
+        return result ? result[0].toLowerCase() : ''
       },
       /**
        * @description 设置视频配置参数宽高
        * @return {null}
        */
       setVideoView() {
-          const videoDom = document.getElementById('1videoID')
-          const logoBoxDom = document.getElementById('logoBox1')
-          // 初始化时取首张图片的宽度
-          // 播放首个视频后，首张图片会被隐藏，宽度为0
-          // 如果logoWidth已经初始化，则不再修改其宽度
-          if (!this.logoWidth) this.logoWidth = logoBoxDom.clientWidth
-          this.clientWidth = videoDom.clientWidth
-          this.clientHeight = videoDom.clientHeight
+        const videoDom = document.getElementById(`1videoID-${this.hashStr}`)
+        const logoBoxDom = document.getElementById(`logoBox1-${this.hashStr}`)
+        // 初始化时取首张图片的宽度
+        // 播放首个视频后，首张图片会被隐藏，宽度为0
+        // 如果logoWidth已经初始化，则不再修改其宽度
+        if (!this.logoWidth) this.logoWidth = logoBoxDom.clientWidth
+        this.clientWidth = videoDom.clientWidth
+        this.clientHeight = videoDom.clientHeight
       },
       /**
        * @description 设置分屏样式
@@ -452,17 +520,12 @@
         const videoOptions = {...this.videoOptions}
         // flv格式视频需要开启直播选项
         if (this.suffixParser(videoMsg.url) === '.flv') videoOptions.isLive = this.live
-        videoOptions.id = length + 'videoID'
+        videoOptions.id = `${length}videoID-${this.hashStr}`
         videoOptions.url = videoMsg.url
         videoOptions.poster = videoMsg.poster
         videoOptions.definitionList = videoMsg.definitionList
-        videoOptions.screenShot = this.screenShot
-        videoOptions.autoplay = this.autoplay
-        videoOptions.crossOrigin = this.videoOptions
-        videoOptions.download = this.download
-        videoOptions.definitionActive = this.definitionActive
-        videoOptions.defaultPlaybackRate = this.defaultPlaybackRate
-
+        // 相同的配置统一处理
+        this.handleSamePlayerOptions(videoOptions)
         this.createPlayers(videoOptions, length)
       },
       /**
@@ -474,15 +537,10 @@
         const videoOptions = {...this.videoOptions}
         // flv格式视频需要开启直播选项
         if (this.suffixParser(url) === '.flv') videoOptions.isLive = this.live
-        videoOptions.id = '1videoID'
+        videoOptions.id = `1videoID-${this.hashStr}`
         videoOptions.url = url
         videoOptions.poster = this.poster
-        videoOptions.screenShot = this.screenShot
-        videoOptions.autoplay = this.autoplay
-        videoOptions.crossOrigin = this.videoOptions
-        videoOptions.download = this.download
-        videoOptions.definitionActive = this.definitionActive
-        videoOptions.defaultPlaybackRate = this.defaultPlaybackRate
+        this.handleSamePlayerOptions(videoOptions)
         this.createPlayer(videoOptions)
       },
       /**
@@ -492,23 +550,20 @@
        * @return {null}
        */
       createPlayers(options, length) {
-        const logoBoxDom = document.getElementById(`logoBox${length}`)
+        const logoBoxDom = document.getElementById(`logoBox${length}-${this.hashStr}`)
+        const currPlayer = this.players[length - 1]
         this.$nextTick(() => {
           // 当前player实例已存在，则重新拉流
-          if (this.players[length - 1]) {
-            this.players[length - 1].src = options.url
+          if (currPlayer) {
+            currPlayer.src = options.url
+            // 同时更改视频配置中的url，避免点击重试按钮时会播放拉流之前的bug
+            currPlayer.config.url = options.url
           } else {
             this.players[length - 1] = this.distinguishPlayerType(this.suffixParser(options.url), options)
           }
-          const currPlayer = this.players[length - 1]
-
-          // 视频加载失败时触发
-          currPlayer.once('error', () => {
-            this.$emit('play-error', options, this.players[length - 1].error)
-          })
-          currPlayer.once('play', () => {
-            logoBoxDom.style.display = 'none'
-          })
+          // 处理播放器监听事件
+          this.handlePlayerEvents(this.players[length - 1], logoBoxDom)
+         // 处理视频清晰度
           this.emitDefinition(options, length)
         })
       },
@@ -518,21 +573,18 @@
        * @return {null}
        */
       createPlayer(options) {
-        const logoBoxDom = document.getElementById(`logoBox1`)
+        const logoBoxDom = document.getElementById(`logoBox1-${this.hashStr}`)
         this.$nextTick(() => {
           // 当前player实例已存在，则重新拉流
           if (this.player) {
             this.player.src = options.url
+            this.player.config.url = options.url
           } else {
             this.player = this.distinguishPlayerType(this.suffixParser(options.url), options)
           }
-          // 视频加载失败时触发
-          this.player.once('error', () => {
-            this.$emit('play-error', options, this.player.error)
-          })
-          this.player.once('play', () => {
-            logoBoxDom.style.display = 'none'
-          })
+          // 处理播放器监听事件
+          this.handlePlayerEvents(this.player, logoBoxDom)
+          // 处理视频清晰度
           this.emitDefinition(options, 1)
         })
       },
@@ -570,7 +622,7 @@
 <style scoped>
   .video-content {
     width: 100%;
-    height: calc(100% - 40px);
+    height: 100%;
     /*background-color: red;*/
     display: flex;
     flex-wrap: wrap;

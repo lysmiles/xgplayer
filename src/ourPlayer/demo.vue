@@ -2,7 +2,7 @@
   <div class="demo">
     <div class="left-tree">
       <ul>
-        <li v-for="item of videoData" :key="item.id" @click="chooseCamera(item)">
+        <li v-for="item of videoData" :key="item.id" @click="toggleCamera(item)">
           <span>{{item.cameraName}}</span>
         </li>
       </ul>
@@ -11,10 +11,10 @@
     <div class="right-play">
       <div class="grid-content">
         <div style="padding-left: 10vw;">
-          <i class="iconfont icon-fenpingfangshi2" title="一屏" @click="chooseSplitScreen(1)"></i>
-          <i class="iconfont icon-fenpin2" title="四屏" @click="chooseSplitScreen(4)"></i>
-          <i class="iconfont icon-fenpingfangshi" title="九屏" @click="chooseSplitScreen(9)"></i>
-          <i class="iconfont icon-fenpingfangshi1" title="十六屏" @click="chooseSplitScreen(16)"></i>
+          <i class="iconfont icon-fenpingfangshi2" title="一屏" @click="toggleSplitScreen(1)"></i>
+          <i class="iconfont icon-fenpin2" title="四屏" @click="toggleSplitScreen(4)"></i>
+          <i class="iconfont icon-fenpingfangshi" title="九屏" @click="toggleSplitScreen(9)"></i>
+          <i class="iconfont icon-fenpingfangshi1" title="十六屏" @click="toggleSplitScreen(16)"></i>
         </div>
         <div class="danmu-input">
           <el-input placeholder="请输入弹幕" v-model="danmuText" size="small" style="width: 50vw;">
@@ -103,7 +103,7 @@
        * @param num {Number} - 分屏数
        * @return {null}
        */
-      chooseSplitScreen(num) {
+      toggleSplitScreen(num) {
         this.splitScreen = num
       },
       /**
@@ -111,7 +111,7 @@
        * @param item {Object} -  视频对象
        * @return  {null}
        */
-      chooseCamera(item) {
+      toggleCamera(item) {
         // 多个视频源播放
         this.videoList.push(item)
         // 单个视频源切换,需要同时切换清晰度列表
@@ -189,7 +189,7 @@
       }
       .play-content {
         width: 100%;
-        height: 100vh;
+        height: 90vh;
         /*background-color: #cecece;*/
       }
 

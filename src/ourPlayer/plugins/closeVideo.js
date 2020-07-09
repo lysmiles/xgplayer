@@ -57,6 +57,7 @@ let closeVideo = function (player) {
     })
     closeBtnDom.removeEventListener('click', () => {
     })
+    player.off('destroy', () => {})
   })
 }
 Player.install('closeVideo', closeVideo)
