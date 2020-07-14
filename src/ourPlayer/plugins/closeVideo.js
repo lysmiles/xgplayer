@@ -2,7 +2,8 @@ import Player from 'xgplayer'
 
 let closeVideo = function (player) {
   const util = Player.util, // 内置工具函数
-    root = player.root // 播放器实例根元素DOM
+    root = player.root, // 播放器实例根元素DOM
+    sniffer = Player.sniffer // 内置工具函数
   const closeBtnHtml = `
         <div style="width: 36px;height: 36px;border-radius: 25px;background: rgba(175, 175, 175, 0.19);cursor: pointer;">
             <div style="width: 26px;height: 3px;background: #fff;border-radius: 10px;transform: rotate(45deg) translate(15px, 7px);"></div>
@@ -24,39 +25,59 @@ let closeVideo = function (player) {
     }
   })
 
-  function handleMouseEvent(e, display) {
-    e.preventDefault()
-    e.stopPropagation()
+  function showCurrCloseBtn(display) {
     closeWrappers.forEach(closeWrapper => {
       // 仅针对当前关闭按钮
-      if (e.target.id === closeWrapper.parentNode.id)
+      if (player.root.id === closeWrapper.parentNode.id)
         closeWrapper.style.display = display
     })
   }
 
-  // 鼠标移入时，按钮出现
-  root.addEventListener('mouseenter', function (e) {
-    handleMouseEvent(e, 'block')
-  })
-  // 鼠标移出时，按钮消失
-  root.addEventListener('mouseleave', function (e) {
-    handleMouseEvent(e, 'none')
-  })
+  if (sniffer.os.isPc) {
+    // 鼠标移入时，按钮出现
+    root.addEventListener('mouseenter', function (e) {
+      e.preventDefault()
+      e.stopPropagation()
+      // 开始播放之后显示
+      if (player.hasStart) showCurrCloseBtn('block')
+    })
+    // 鼠标移出时，按钮消失
+    root.addEventListener('mouseleave', function (e) {
+      e.preventDefault()
+      e.stopPropagation()
+      // 开始播放之后显示
+      if (player.hasStart) showCurrCloseBtn('none')
+    })
+  } else {
+    // 移动端视频开始播放就出现，点击关闭之后消失
+    player.on('play', function () {
+      showCurrCloseBtn('block')
+    })
+  }
+
   // 点击按钮清除视频源
-  closeBtnDom.addEventListener('click', function (e) {
-    e.preventDefault()
-    e.stopPropagation()
-    player.src = ''
+  ['touchend', 'click'].forEach(item => {
+    closeBtnDom.addEventListener(item, function (e) {
+      e.preventDefault()
+      e.stopPropagation()
+      player.src = ''
+      showCurrCloseBtn('none')
+    })
   })
+
   player.once('destroy', function () {
     // 组件销毁时移除事件
-    root.removeEventListener('mouseenter', () => {
+    ['mouseenter', 'mouseleave'].forEach(item => {
+      root.removeEventListener(item, () => {
+      })
     })
-    root.removeEventListener('mouseleave', () => {
+    ;['touchend', 'click'].forEach(item => {
+      closeBtnDom.removeEventListener(item, () => {
+      })
     })
-    closeBtnDom.removeEventListener('click', () => {
+    player.off('destroy', () => {
     })
-    player.off('destroy', () => {})
+    player.off('play', () => {})
   })
 }
 Player.install('closeVideo', closeVideo)

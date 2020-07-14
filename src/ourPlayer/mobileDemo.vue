@@ -8,6 +8,9 @@
         :only-one-play="true"
         :key="video.cameraName"
       >
+       <!-- <template #logo>
+          <img :src="logo" alt="logo" width="80px" height="80px">
+        </template>-->
       </inphase-player>
     </div>
   </div>
@@ -28,7 +31,9 @@
     data() {
       return {
         // 视频源数组
-        videoData: []
+        videoData: [],
+        // 默认logo
+        logo: require('./assets/img/logo.png'),
       }
     },
     created() {

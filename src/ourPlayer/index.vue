@@ -16,7 +16,8 @@
     >
       <div class="logo-box"
            :id="`logoBox${item}-${hashStr}`"
-           :style="{marginLeft: `-${logoWidth / 2}px`, marginTop: `-${logoWidth / 2}px`}">
+           :style="{marginLeft: `-${logoWidth / 2}px`, marginTop: `-${logoWidth / 2}px`}"
+           v-if="showDefaultLogo">
         <slot name="logo">
           <!--默认logo-->
           <img :src="logo" alt="logo">
@@ -32,7 +33,7 @@
   import 'xgplayer-mp4'
   import HlsJsPlayer from 'xgplayer-hls.js'
   import FlvJsPlayer from 'xgplayer-flv.js'
-  // 执行关闭按钮插件
+  // 执行插件
   import './plugins/closeVideo'
   import './plugins/error'
   // 自定义样式
@@ -162,6 +163,13 @@
       onlyOnePlay: {
         type: Boolean,
         default: false
+      },
+      /**
+       * 是否展示默认logo
+       */
+      showDefaultLogo: {
+        type: Boolean,
+        default: true
       }
     },
     data() {
@@ -204,7 +212,7 @@
           poster: '', // 封面图
           playbackRate: [0.5, 0.75, 1, 1.5, 2], // 倍速播放
           defaultPlaybackRate: 1.5, // 默认倍速
-          ignores: ['error'], // 忽略内部插件
+          ignores: [], // 忽略内部插件
           /*danmu: {
             comments: [
               {
@@ -386,6 +394,7 @@
           firstClosedPlayer.src = pop.url
           firstClosedPlayer.config.url = pop.url
           firstClosedPlayer.emit('resourceReady', pop.definitionList)
+          // 同步播放器实例与视频数组的对应关系
           this.videoList.splice(firstClosedPlayerIndex, 1, pop)
           return []
         }
@@ -444,6 +453,8 @@
        * @return {null}
        */
       handleSamePlayerOptions(videoOptions) {
+        // 在手机模式下忽略默认error插件
+        if (!Player.sniffer.os.isPc) videoOptions.ignores = ['error']
         videoOptions.screenShot = this.screenShot
         videoOptions.autoplay = this.autoplay
         videoOptions.crossOrigin = this.videoOptions
@@ -471,12 +482,10 @@
             this.$parent.$children.forEach(item => {
               // 暂停当前播放视频之外的视频
               if (item._uid !== this._uid) {
-                // item.setVolume()
                 item.videoPause()
               }
             })
           }
-          // player.start(player.src)
         })
         // 实例销毁后注销事件
         player.once('destroy', () => {
@@ -490,9 +499,12 @@
        * @return {null}
        */
       onPlayerDestroy(player) {
-        player.off('error', () => {})
-        player.off('play', () => {})
-        player.off('destroy', () => {})
+        player.off('error', () => {
+        })
+        player.off('playing', () => {
+        })
+        player.off('destroy', () => {
+        })
       },
       /**
        * @description 根据不同的视频源格式创建不同的player实例
@@ -529,7 +541,19 @@
         // 初始化时取首张图片的宽度
         // 播放首个视频后，首张图片会被隐藏，宽度为0
         // 如果logoWidth已经初始化，则不再修改其宽度
-        if (!this.logoWidth) this.logoWidth = logoBoxDom.clientWidth
+        if (!this.logoWidth) {
+          // 当外部传入slot时，logo位置表现没问题
+          // 当没有传入slot，使用默认分发内容时，会获取不到正确的logo宽度
+          // 默认分发内容的dom渲染此时还未进行，只有使用setTimeout在下一个调用栈获取
+          if (this.$slots.logo) {
+            this.logoWidth = logoBoxDom.clientWidth
+          } else {
+            window.setTimeout(() => {
+              this.logoWidth = logoBoxDom.clientWidth
+            }, 0)
+          }
+
+        }
         this.clientWidth = videoDom.clientWidth
         this.clientHeight = videoDom.clientHeight
       },
@@ -594,7 +618,7 @@
           }
           // 处理播放器监听事件
           this.handlePlayerEvents(this.players[length - 1], logoBoxDom)
-         // 处理视频清晰度
+          // 处理视频清晰度
           this.emitDefinition(options, length)
         })
       },
