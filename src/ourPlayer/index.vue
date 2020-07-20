@@ -201,7 +201,7 @@
           url: '', // 视频源
           width: 0, // 宽度
           height: 0, // 高度
-          isLive: true, // flv格式视频流是否开启直播
+          isLive: false, // flv格式视频流是否开启直播
           playsinline: true, // 开启ios和微信的内联模式
           screenShot: true,// 是否开启截图
           autoplay: true, // 是否自动播放
@@ -354,7 +354,7 @@
         return randomStr
       },
       /**
-       * 处理不合理的分屏数
+       * 处理分屏数
        */
       splitScreenNum() {
         if ([1, 4, 9, 16].indexOf(this.splitScreen) > -1) {
@@ -381,19 +381,19 @@
 
         // 判断视频源是否符合支持的格式
         if (!this.suffixParser(lastVideoUrl)) throw new Error('仅支持mp4, m3u8, flv格式视频或直播流')
-        // 通过关闭按钮插件关闭后，默认视频源为当前网站origin
-        const origin = window.location.origin + '/'
+
         // 找出第一个无视频源播放器实例索引
         const firstClosedPlayerIndex = this.players.findIndex((player) => {
-          return player.src === origin
+          return player.hasClosed ? !(player.hasClosed = false) : false
         })
-        const firstClosedPlayer = this.players[firstClosedPlayerIndex]
+
         // 找到之后播放同时切换清晰度视频源
         if (firstClosedPlayerIndex > -1) {
+          const firstClosedPlayer = this.players[firstClosedPlayerIndex]
           const pop = this.videoList.pop()
           firstClosedPlayer.src = pop.url
           firstClosedPlayer.config.url = pop.url
-          firstClosedPlayer.emit('resourceReady', pop.definitionList)
+          firstClosedPlayer.emit('resourceReady', this.filterDefinition(pop.definitionList, pop.url))
           // 同步播放器实例与视频数组的对应关系
           this.videoList.splice(firstClosedPlayerIndex, 1, pop)
           return []
@@ -406,21 +406,10 @@
         if (flagIndex === len - 1) {
           // 当数组长度超过当前分屏数时，用新元素替换原数组最后一位元素
           if (len > this.splitScreenNum) {
-            /*
-            *   不能省略该临时变量lastVideoItem，
-            *   js执行时会从左到右执行，
-            *   如果这样写
-            *   this.videoList[this.videoList.length - 1] = this.videoList.pop()
-            *   左侧先执行，得到原数组长度的最后一位下标
-            *   右侧后执行，返回原数组最后一个元素
-            *   最后将右侧赋值给左侧
-            *   结果就是该数组永远也不会改变
-            * */
-            let lastVideoItem = this.videoList.pop()
-            this.videoList[this.videoList.length - 1] = lastVideoItem
+            this.videoList[this.splitScreenNum - 1] = this.videoList.pop()
           }
           this.initVideos(this.videoList[this.videoList.length - 1], this.videoList.length)
-          return this.videoList
+          return []
         } else {
           // 触发视频重复事件
           this.$emit('repeat-video', this.videoList.pop())
@@ -453,12 +442,13 @@
        * @return {null}
        */
       handleSamePlayerOptions(videoOptions) {
-        // 在手机模式下忽略默认error插件
-        if (!Player.sniffer.os.isPc) videoOptions.ignores = ['error']
+        // 在手机模式下或者直播状态下忽略默认error插件
+        if (!Player.sniffer.os.isPc || this.live) videoOptions.ignores = ['error']
+        // 直播模式下，不显示下载按钮
+        videoOptions.download = this.live ? false : this.download
         videoOptions.screenShot = this.screenShot
         videoOptions.autoplay = this.autoplay
         videoOptions.crossOrigin = this.videoOptions
-        videoOptions.download = this.download
         videoOptions.definitionActive = this.definitionActive
         videoOptions.defaultPlaybackRate = this.defaultPlaybackRate
       },
@@ -470,7 +460,9 @@
        */
       handlePlayerEvents(player, logoBoxDom) {
         // 视频加载失败时触发
-        player.on('error', () => {
+        player.on('error', (info) => {
+          // 监听关闭按钮触发的事件
+          if (info === 'closeVideo') logoBoxDom.style.display = 'block'
           this.$emit('play-error', player.error)
         })
         // 视频播放时触发
@@ -508,8 +500,8 @@
       },
       /**
        * @description 根据不同的视频源格式创建不同的player实例
-       * @param suffix {String} -  视频源后缀名
-       * @param options {Object} -  配置对象
+       * @param suffix {String} - 视频源后缀名
+       * @param options {Object} - 配置对象
        * @return {Object} - player实例
        */
       distinguishPlayerType(suffix, options) {
@@ -645,8 +637,8 @@
       },
       /**
        * @description 触发清晰度设置
-       * @param options {Object} -  配置对象
-       * @param length {Number} -  数组下标
+       * @param options {Object} - 配置对象
+       * @param length {Number} - 数组下标
        * @return {null}
        */
       emitDefinition(options, length) {
@@ -660,16 +652,36 @@
            * */
         const singleDefinitionListLen = this.definitionList ? this.definitionList.length : 0
         const multiDefinitionListLen = options.definitionList ? options.definitionList.length : 0
+
         if (!singleDefinitionListLen && multiDefinitionListLen) {
           // 多个视频源
-          this.players[length - 1].emit('resourceReady', options.definitionList)
+          let filterList = this.filterDefinition(options.definitionList, options.url)
+          this.players[length - 1].emit('resourceReady', filterList)
         } else if (singleDefinitionListLen && !multiDefinitionListLen) {
           // 单个视频源
-          this.player.emit('resourceReady', this.definitionList)
+          let filterList = this.filterDefinition(this.definitionList, this.videoUrl)
+          this.player.emit('resourceReady', filterList)
         } else if (singleDefinitionListLen && multiDefinitionListLen) {
           throw new Error('不能同时传入单个和多个视频源所需要的definitionList')
         }
       },
+      /**
+       * @description 过滤清晰度数组
+       * @param definitionList {Array} - 清晰度数组
+       * @param url {String} - 视频源
+       * @return {Array} - 过滤后的清晰度数组
+       */
+      filterDefinition(definitionList, url) {
+          // 默认当前url为标清资源
+          if (!definitionList[0].url) {
+            definitionList[0].url = url
+          }
+          // 过滤没有url资源的清晰度
+          return definitionList.filter(item => {
+            return !!item.url
+          })
+      }
+
     }
   }
 </script>
