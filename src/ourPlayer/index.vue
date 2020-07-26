@@ -28,6 +28,7 @@
 </template>
 
 <script>
+  // 引入西瓜播放器
   import Player from 'xgplayer'
   import 'xgplayer'
   import 'xgplayer-mp4'
@@ -38,6 +39,109 @@
   import './plugins/error'
   // 自定义样式
   // import '../assets/css/.xgplayer/skin/index.js'
+
+  /*
+  * 常量
+  * */
+  // 视频源后缀名正则
+  const videoSuffixReg = /(\.mp4|\.m3u8|\.flv)$/i
+  // 分屏样式参数
+  const videoStyleOptions = {
+    1: 'width:100% !important;height:100% !important;',
+    4: 'width:49% !important;height:49% !important;',
+    9: 'width:33% !important;height:33% !important;',
+    16: 'width:24% !important;height:24% !important;',
+  }
+  // 视频参数
+  const commonVideoOptions = {
+    id: '', // 播放器容器DOM的ID
+    url: '', // 视频源
+    width: 0, // 宽度
+    height: 0, // 高度
+    isLive: false, // flv格式视频流是否开启直播
+    playsinline: true, // 开启ios和微信的内联模式
+    screenShot: true,// 是否开启截图
+    autoplay: true, // 是否自动播放
+    crossOrigin: true, // 是否跨域
+    download: true, //是否下载视频
+    pip: false, // 是否开启画中画
+    definitionActive: 'hover', // 修改清晰度控件的触发方式
+    poster: '', // 封面图
+    playbackRate: [0.5, 0.75, 1, 1.5, 2], // 倍速播放
+    defaultPlaybackRate: 1.5, // 默认倍速
+    ignores: [], // 忽略内部插件
+    /*danmu: {
+      comments: [
+        {
+          duration: 15000, //弹幕持续显示时间,毫秒(最低为5000毫秒)
+          id: '1', //弹幕id，需唯一
+          start: 1000, //弹幕出现时间，毫秒
+          prior: false, //该条弹幕优先显示，默认false
+          color: true, //该条弹幕为彩色弹幕，默认false
+          txt: '我是一条孤独的弹幕~~~', //弹幕文字内容
+          style: {  //弹幕自定义样式
+            color: '#ff9500',
+            fontSize: '20px',
+          }
+        },{
+          duration: 15000, //弹幕持续显示时间,毫秒(最低为5000毫秒)
+          id: '2', //弹幕id，需唯一
+          start: 1000, //弹幕出现时间，毫秒
+          prior: false, //该条弹幕优先显示，默认false
+          color: true, //该条弹幕为彩色弹幕，默认false
+          txt: '我是一条孤独的弹幕~~~', //弹幕文字内容
+          style: {  //弹幕自定义样式
+            color: '#ff9500',
+            fontSize: '20px',
+          }
+        },
+        {
+          duration: 15000, //弹幕持续显示时间,毫秒(最低为5000毫秒)
+          id: '3', //弹幕id，需唯一
+          start: 1000, //弹幕出现时间，毫秒
+          prior: false, //该条弹幕优先显示，默认false
+          color: true, //该条弹幕为彩色弹幕，默认false
+          txt: '我是一条孤独的弹幕~~~', //弹幕文字内容
+          style: {  //弹幕自定义样式
+            color: '#ff9500',
+            fontSize: '20px',
+          }
+        },
+        {
+          duration: 15000, //弹幕持续显示时间,毫秒(最低为5000毫秒)
+          id: '4', //弹幕id，需唯一
+          start: 1000, //弹幕出现时间，毫秒
+          prior: false, //该条弹幕优先显示，默认false
+          color: true, //该条弹幕为彩色弹幕，默认false
+          txt: '我是一条孤独的弹幕~~~', //弹幕文字内容
+          style: {  //弹幕自定义样式
+            color: '#ff9500',
+            fontSize: '20px',
+          }
+        }
+
+      ],  //弹幕数组
+      area: {  //弹幕显示区域
+        start: 0, //区域顶部到播放器顶部所占播放器高度的比例
+        end: 1 //区域底部到播放器顶部所占播放器高度的比例
+      },
+    },*/
+  }
+  // 弹幕参数
+  const commonDanmuOptions = {
+    duration: 15000, //弹幕持续显示时间,毫秒(最低为5000毫秒)
+    id: '1', //弹幕id，需唯一
+    start: 1000, //弹幕出现时间，毫秒
+    prior: false, //该条弹幕优先显示，默认false
+    color: true, //该条弹幕为彩色弹幕，默认false
+    txt: '我是一条孤独的弹幕~~~', //弹幕文字内容
+    style: {  //弹幕自定义样式
+      color: '#ff9500',
+      fontSize: '20px',
+    },
+    mode: 'scroll' //显示模式，top顶部居中，bottom底部居中，scroll滚动，默认为scroll
+  }
+
   export default {
     name: "inphasePlayer",
     props: {
@@ -174,8 +278,6 @@
     },
     data() {
       return {
-        // 视频源后缀名正则
-        videoSuffixReg: /(\.mp4|\.m3u8|\.flv)$/i,
         // logo宽度
         logoWidth: 0,
         // 默认logo
@@ -190,99 +292,6 @@
         clientHeight: '',
         // 容器尺寸样式
         videoStyles: '',
-        videoStyleOptions: {
-          1: 'width:100% !important;height:100% !important;',
-          4: 'width:49% !important;height:49% !important;',
-          9: 'width:33% !important;height:33% !important;',
-          16: 'width:24% !important;height:24% !important;',
-        },
-        videoOptions: {
-          id: '', // 播放器容器DOM的ID
-          url: '', // 视频源
-          width: 0, // 宽度
-          height: 0, // 高度
-          isLive: false, // flv格式视频流是否开启直播
-          playsinline: true, // 开启ios和微信的内联模式
-          screenShot: true,// 是否开启截图
-          autoplay: true, // 是否自动播放
-          crossOrigin: true, // 是否跨域
-          download: true, //是否下载视频
-          pip: false, // 是否开启画中画
-          definitionActive: 'hover', // 修改清晰度控件的触发方式
-          poster: '', // 封面图
-          playbackRate: [0.5, 0.75, 1, 1.5, 2], // 倍速播放
-          defaultPlaybackRate: 1.5, // 默认倍速
-          ignores: [], // 忽略内部插件
-          /*danmu: {
-            comments: [
-              {
-                duration: 15000, //弹幕持续显示时间,毫秒(最低为5000毫秒)
-                id: '1', //弹幕id，需唯一
-                start: 1000, //弹幕出现时间，毫秒
-                prior: false, //该条弹幕优先显示，默认false
-                color: true, //该条弹幕为彩色弹幕，默认false
-                txt: '我是一条孤独的弹幕~~~', //弹幕文字内容
-                style: {  //弹幕自定义样式
-                  color: '#ff9500',
-                  fontSize: '20px',
-                }
-              },{
-                duration: 15000, //弹幕持续显示时间,毫秒(最低为5000毫秒)
-                id: '2', //弹幕id，需唯一
-                start: 1000, //弹幕出现时间，毫秒
-                prior: false, //该条弹幕优先显示，默认false
-                color: true, //该条弹幕为彩色弹幕，默认false
-                txt: '我是一条孤独的弹幕~~~', //弹幕文字内容
-                style: {  //弹幕自定义样式
-                  color: '#ff9500',
-                  fontSize: '20px',
-                }
-              },
-              {
-                duration: 15000, //弹幕持续显示时间,毫秒(最低为5000毫秒)
-                id: '3', //弹幕id，需唯一
-                start: 1000, //弹幕出现时间，毫秒
-                prior: false, //该条弹幕优先显示，默认false
-                color: true, //该条弹幕为彩色弹幕，默认false
-                txt: '我是一条孤独的弹幕~~~', //弹幕文字内容
-                style: {  //弹幕自定义样式
-                  color: '#ff9500',
-                  fontSize: '20px',
-                }
-              },
-              {
-                duration: 15000, //弹幕持续显示时间,毫秒(最低为5000毫秒)
-                id: '4', //弹幕id，需唯一
-                start: 1000, //弹幕出现时间，毫秒
-                prior: false, //该条弹幕优先显示，默认false
-                color: true, //该条弹幕为彩色弹幕，默认false
-                txt: '我是一条孤独的弹幕~~~', //弹幕文字内容
-                style: {  //弹幕自定义样式
-                  color: '#ff9500',
-                  fontSize: '20px',
-                }
-              }
-
-            ],  //弹幕数组
-            area: {  //弹幕显示区域
-              start: 0, //区域顶部到播放器顶部所占播放器高度的比例
-              end: 1 //区域底部到播放器顶部所占播放器高度的比例
-            },
-          },*/
-        },
-        danmuOptions: {
-          duration: 15000, //弹幕持续显示时间,毫秒(最低为5000毫秒)
-          id: '1', //弹幕id，需唯一
-          start: 1000, //弹幕出现时间，毫秒
-          prior: false, //该条弹幕优先显示，默认false
-          color: true, //该条弹幕为彩色弹幕，默认false
-          txt: '我是一条孤独的弹幕~~~', //弹幕文字内容
-          style: {  //弹幕自定义样式
-            color: '#ff9500',
-            fontSize: '20px',
-          },
-          mode: 'scroll' //显示模式，top顶部居中，bottom底部居中，scroll滚动，默认为scroll
-        }
       }
     },
     watch: {
@@ -320,7 +329,7 @@
         let len = val.length - 1
         if (!val[len]) throw new Error('传入的弹幕为空')
         if (typeof val[len] === 'string') {
-          const danmuOptions = {...this.danmuOptions}
+          const danmuOptions = {...commonDanmuOptions}
           danmuOptions.id = `${Date.now()}`
           danmuOptions.txt = val[len]
           this.player.danmu.sendComment(danmuOptions)
@@ -382,34 +391,25 @@
         // 判断视频源是否符合支持的格式
         if (!this.suffixParser(lastVideoUrl)) throw new Error('仅支持mp4, m3u8, flv格式视频或直播流')
 
-        // 找出第一个无视频源播放器实例索引
-        const firstClosedPlayerIndex = this.players.findIndex((player) => {
-          return player.hasClosed ? !(player.hasClosed = false) : false
-        })
-
-        // 找到之后播放同时切换清晰度视频源
-        if (firstClosedPlayerIndex > -1) {
-          const firstClosedPlayer = this.players[firstClosedPlayerIndex]
-          const pop = this.videoList.pop()
-          firstClosedPlayer.src = pop.url
-          firstClosedPlayer.config.url = pop.url
-          firstClosedPlayer.emit('resourceReady', this.filterDefinition(pop.definitionList, pop.url))
-          // 同步播放器实例与视频数组的对应关系
-          this.videoList.splice(firstClosedPlayerIndex, 1, pop)
-          return []
-        }
-
         // 新加入的视频url，如果是重复的，则不加入
-        let flagIndex = this.videoList.findIndex(item => item.url === lastVideoUrl)
-
+        let flagIndex = this.videoList.findIndex(item => (item ? item.url : '') === lastVideoUrl)
+        // 找出第一个无视频源播放器实例索引
+        const firstClosedPlayerIndex = this.players.findIndex(player => player.hasClosed ? !(player.hasClosed = false) : false)
         // 如果找到的坐标就是新加入视频的坐标，则没有重复
         if (flagIndex === len - 1) {
+          // 替换首个通过按钮关闭的视频源信息
+          if (firstClosedPlayerIndex > -1) {
+            this.toggleVideo(firstClosedPlayerIndex)
+            return []
+          }
+
           // 当数组长度超过当前分屏数时，用新元素替换原数组最后一位元素
           if (len > this.splitScreenNum) {
             this.videoList[this.splitScreenNum - 1] = this.videoList.pop()
           }
           this.initVideos(this.videoList[this.videoList.length - 1], this.videoList.length)
           return []
+
         } else {
           // 触发视频重复事件
           this.$emit('repeat-video', this.videoList.pop())
@@ -418,6 +418,23 @@
       }
     },
     methods: {
+      /**
+       * @description 切换视频源相关参数
+       * @param index {Number} - 首个关闭的视频数组下标
+       * @return {null}
+       */
+      toggleVideo(index) {
+        console.log(11)
+        const firstClosedPlayer = this.players[index]
+        const pop = this.videoList.pop()
+        firstClosedPlayer.src = pop.url
+        firstClosedPlayer.src = pop.url
+        firstClosedPlayer.config.url = pop.url
+        // 找到之后播放同时切换清晰度视频源
+        firstClosedPlayer.emit('resourceReady', this.filterDefinition(pop.definitionList, pop.url))
+        // 同步播放器实例与视频数组的对应关系
+        this.videoList.splice(index, 1, pop)
+      },
       /**
        * @description 暂停同时满足正在播放与未暂停两个条件的播放器
        * @return {null}
@@ -448,7 +465,7 @@
         videoOptions.download = this.live ? false : this.download
         videoOptions.screenShot = this.screenShot
         videoOptions.autoplay = this.autoplay
-        videoOptions.crossOrigin = this.videoOptions
+        videoOptions.crossOrigin = this.crossOrigin
         videoOptions.definitionActive = this.definitionActive
         videoOptions.defaultPlaybackRate = this.defaultPlaybackRate
       },
@@ -460,14 +477,12 @@
        */
       handlePlayerEvents(player, logoBoxDom) {
         // 视频加载失败时触发
-        player.on('error', (info) => {
-          // 监听关闭按钮触发的事件
-          if (info === 'closeVideo') logoBoxDom.style.display = 'block'
+        player.on('error', () => {
           this.$emit('play-error', player.error)
         })
         // 视频播放时触发
         // 监听play事件会导致已经播放的视频暂停，但后续视频无法播放
-        player.on('playing', () => {
+        player.on('playing', ({msg, rootId}) => {
           logoBoxDom.style.display = 'none'
           // 移动端同一页面是否只能播放一个视频
           if (this.onlyOnePlay) {
@@ -478,6 +493,17 @@
               }
             })
           }
+          // 监听通过关闭按钮传递的事件
+          if (msg === 'closeVideo') {
+            // 监听关闭按钮触发的事件
+            if (this.live) logoBoxDom.style.display = 'block'
+            // 伪数组转化为数组
+            const videoFixDom = [...document.querySelectorAll('.video-fix')]
+            const deleteIndex = videoFixDom.findIndex(item => item.id === rootId)
+            // 不改变现有坐标顺序情况下，清空该坐标视频信息
+            this.videoList[deleteIndex] = null
+          }
+
         })
         // 实例销毁后注销事件
         player.once('destroy', () => {
@@ -519,7 +545,7 @@
        * @return {String} - 对应的后缀名或空字符串
        */
       suffixParser(url) {
-        const result = this.videoSuffixReg.exec(url)
+        const result = videoSuffixReg.exec(url)
         // 统一处理为小写
         return result ? result[0].toLowerCase() : ''
       },
@@ -555,7 +581,7 @@
        */
       setScreenStyle() {
         this.setVideoView()
-        this.videoStyles = this.videoStyleOptions[`${this.splitScreenNum}`]
+        this.videoStyles = videoStyleOptions[`${this.splitScreenNum}`]
       },
       /**
        * @description 初始化多个视频源
@@ -564,7 +590,7 @@
        * @return {null}
        */
       initVideos(videoMsg, length) {
-        const videoOptions = {...this.videoOptions}
+        const videoOptions = {...commonVideoOptions}
         // flv格式视频需要开启直播选项
         if (this.suffixParser(videoMsg.url) === '.flv') videoOptions.isLive = this.live
         videoOptions.id = `${length}videoID-${this.hashStr}`
@@ -581,7 +607,7 @@
        * @return {null}
        */
       initVideo(url) {
-        const videoOptions = {...this.videoOptions}
+        const videoOptions = {...commonVideoOptions}
         // flv格式视频需要开启直播选项
         if (this.suffixParser(url) === '.flv') videoOptions.isLive = this.live
         videoOptions.id = `1videoID-${this.hashStr}`
@@ -672,14 +698,14 @@
        * @return {Array} - 过滤后的清晰度数组
        */
       filterDefinition(definitionList, url) {
-          // 默认当前url为标清资源
-          if (!definitionList[0].url) {
-            definitionList[0].url = url
-          }
-          // 过滤没有url资源的清晰度
-          return definitionList.filter(item => {
-            return !!item.url
-          })
+        // 默认当前url为标清资源
+        if (!definitionList[0].url) {
+          definitionList[0].url = url
+        }
+        // 过滤没有url资源的清晰度
+        return definitionList.filter(item => {
+          return !!item.url
+        })
       }
 
     }

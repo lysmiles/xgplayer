@@ -65,8 +65,10 @@ let closeVideo = function (player) {
       e.preventDefault()
       e.stopPropagation()
       player.src = ''
-      player.config.url = ''
-      player.emit('error', 'closeVideo')
+      player.emit('playing', {
+        msg: 'closeVideo',
+        rootId: root.id
+      })
       if (isPc) player.controls.style.display = 'none'
       player.hasClosed = true
       hasClosedByBtn = true
