@@ -15,15 +15,18 @@ npm i xgplayer-mp4
 ```
 npm i xgplayer-flv.js
 ```
-如果需要自定义样式，安装以下`loader`（自定义样式功能暂未开放）
-```
-npm i node-sass sass-loader raw-loader
-```
 将整个`ourPlayer`文件夹放入组件目录`components`下，使用该组件
 ```js
 import InphasePlayer from '../components/ourPlayer'
 ```
-
+在`main.js`中引入`iconfont`文件
+```js
+import './ourPlayer/assets/iconfont/iconfont.css'
+```
+如果需要自定义样式，安装以下`loader`（自定义样式功能暂未开放）
+```
+npm i node-sass sass-loader raw-loader
+```
 # API
 ## 属性
 ### 分屏数
