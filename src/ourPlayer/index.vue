@@ -42,7 +42,7 @@
 
   /*
   * 常量
-  * */
+  */
   // 视频源后缀名正则
   const videoSuffixReg = /(\.mp4|\.m3u8|\.flv)$/i
   // 分屏样式参数
@@ -424,10 +424,8 @@
        * @return {null}
        */
       toggleVideo(index) {
-        console.log(11)
         const firstClosedPlayer = this.players[index]
         const pop = this.videoList.pop()
-        firstClosedPlayer.src = pop.url
         firstClosedPlayer.src = pop.url
         firstClosedPlayer.config.url = pop.url
         // 找到之后播放同时切换清晰度视频源
@@ -488,14 +486,13 @@
           if (this.onlyOnePlay) {
             this.$parent.$children.forEach(item => {
               // 暂停当前播放视频之外的视频
-              if (item._uid !== this._uid) {
+              if (item._uid !== this._uid && item.$options.name === 'inphasePlayer') {
                 item.videoPause()
               }
             })
           }
           // 监听通过关闭按钮传递的事件
           if (msg === 'closeVideo') {
-            // 监听关闭按钮触发的事件
             if (this.live) logoBoxDom.style.display = 'block'
             // 伪数组转化为数组
             const videoFixDom = [...document.querySelectorAll('.video-fix')]
@@ -625,20 +622,18 @@
       createPlayers(options, length) {
         const logoBoxDom = document.getElementById(`logoBox${length}-${this.hashStr}`)
         const currPlayer = this.players[length - 1]
-        this.$nextTick(() => {
-          // 当前player实例已存在，则重新拉流
-          if (currPlayer) {
-            currPlayer.src = options.url
-            // 同时更改视频配置中的url，避免点击重试按钮时会播放拉流之前的bug
-            currPlayer.config.url = options.url
-          } else {
-            this.players[length - 1] = this.distinguishPlayerType(this.suffixParser(options.url), options)
-          }
-          // 处理播放器监听事件
-          this.handlePlayerEvents(this.players[length - 1], logoBoxDom)
-          // 处理视频清晰度
-          this.emitDefinition(options, length)
-        })
+        // 当前player实例已存在，则重新拉流
+        if (currPlayer) {
+          currPlayer.src = options.url
+          // 同时更改视频配置中的url，避免点击重试按钮时会播放拉之前的流的bug
+          currPlayer.config.url = options.url
+        } else {
+          this.players[length - 1] = this.distinguishPlayerType(this.suffixParser(options.url), options)
+        }
+        // 处理播放器监听事件
+        this.handlePlayerEvents(this.players[length - 1], logoBoxDom)
+        // 处理视频清晰度
+        this.emitDefinition(options, length)
       },
       /**
        * @description 创建单个视频对象
@@ -647,19 +642,17 @@
        */
       createPlayer(options) {
         const logoBoxDom = document.getElementById(`logoBox1-${this.hashStr}`)
-        this.$nextTick(() => {
-          // 当前player实例已存在，则重新拉流
-          if (this.player) {
-            this.player.src = options.url
-            this.player.config.url = options.url
-          } else {
-            this.player = this.distinguishPlayerType(this.suffixParser(options.url), options)
-          }
-          // 处理播放器监听事件
-          this.handlePlayerEvents(this.player, logoBoxDom)
-          // 处理视频清晰度
-          this.emitDefinition(options, 1)
-        })
+        // 当前player实例已存在，则重新拉流
+        if (this.player) {
+          this.player.src = options.url
+          this.player.config.url = options.url
+        } else {
+          this.player = this.distinguishPlayerType(this.suffixParser(options.url), options)
+        }
+        // 处理播放器监听事件
+        this.handlePlayerEvents(this.player, logoBoxDom)
+        // 处理视频清晰度
+        this.emitDefinition(options, 1)
       },
       /**
        * @description 触发清晰度设置
@@ -698,16 +691,15 @@
        * @return {Array} - 过滤后的清晰度数组
        */
       filterDefinition(definitionList, url) {
-        // 默认当前url为标清资源
-        if (!definitionList[0].url) {
-          definitionList[0].url = url
+        if (Array.isArray(definitionList)) {
+          // 默认当前url为标清资源
+          if (!definitionList[0].url) {
+            definitionList[0].url = url
+          }
+          // 过滤没有url资源的清晰度
+          return definitionList.filter(item => !!item.url)
         }
-        // 过滤没有url资源的清晰度
-        return definitionList.filter(item => {
-          return !!item.url
-        })
       }
-
     }
   }
 </script>
