@@ -47,10 +47,10 @@
   const videoSuffixReg = /(\.mp4|\.m3u8|\.flv)$/i
   // 分屏样式参数
   const videoStyleOptions = {
-    1: 'width:100% !important;height:100% !important;',
-    4: 'width:49% !important;height:49% !important;',
-    9: 'width:33% !important;height:33% !important;',
-    16: 'width:24% !important;height:24% !important;',
+    1: 'width: 100% !important;height: 100% !important;',
+    4: 'width: 49% !important;height: 49% !important;',
+    9: 'width: 33% !important;height: 33% !important;',
+    16: 'width: 24% !important;height: 24% !important;',
   }
   // 视频参数
   const commonVideoOptions = {
@@ -484,10 +484,10 @@
           logoBoxDom.style.display = 'none'
           // 移动端同一页面是否只能播放一个视频
           if (this.onlyOnePlay) {
-            this.$parent.$children.forEach(item => {
+            this.$parent.$children.forEach(component => {
               // 暂停当前播放视频之外的视频
-              if (item._uid !== this._uid && item.$options.name === 'inphasePlayer') {
-                item.videoPause()
+              if (component._uid !== this._uid && component.$options.name === 'inphasePlayer') {
+                component.videoPause()
               }
             })
           }
