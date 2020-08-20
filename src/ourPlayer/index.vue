@@ -279,7 +279,7 @@
     data() {
       return {
         // logo宽度
-        logoWidth: 0,
+        logoWidth: 50,
         // 默认logo
         logo: require('./assets/img/logo.png'),
         // 单个播放器对象
